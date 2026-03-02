@@ -11,7 +11,7 @@ dotenv.config();
 import { jiraConfig } from './config/jira.config';
 
 const app: Application = express();
-const PORT = process.env.PORT || 3000;
+const PORT: number = parseInt(process.env.PORT || '3000', 10);
 
 // Middleware
 
