@@ -112,6 +112,21 @@ The `JIRA_EMAIL` is validated to ensure it's a proper email address (required by
 
 If validation fails, the app will crash at startup with a clear error message.
 
+## 🧪 Testing Validation
+
+A comprehensive test file (`.env.test`) is provided with 8 different validation scenarios:
+
+```bash
+# Copy the test file
+cp .env.test .env
+
+# Edit .env and uncomment ONE scenario at a time
+# Run the app to see validation in action
+npm run dev
+```
+
+See `VALIDATION_EXAMPLES.md` for detailed testing instructions and examples.
+
 ## 📝 Next Steps
 
 The project structure is ready for you to add:

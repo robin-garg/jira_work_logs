@@ -60,22 +60,56 @@ Please set JIRA_BASE_URL in your .env file or environment.
 
 ## 🧪 Testing Validation
 
-To test the validation yourself:
+We provide a comprehensive test file (`.env.test`) with multiple validation scenarios.
 
-1. **Test with invalid URL:**
+### Quick Test
+
+1. **Copy the test file:**
    ```bash
-   cp .env.invalid .env
+   cp .env.test .env
+   ```
+
+2. **Edit `.env` and uncomment ONE scenario at a time:**
+   - Scenario 1: ✅ Valid configuration (default)
+   - Scenario 2: ❌ Invalid URL - plain text (`abc`)
+   - Scenario 3: ❌ Invalid URL - missing protocol
+   - Scenario 4: ❌ Invalid URL - wrong protocol (`ftp://`)
+   - Scenario 5: ❌ Invalid email - plain text (`notanemail`)
+   - Scenario 6: ❌ Invalid email - missing @ symbol
+   - Scenario 7: ❌ Invalid email - missing domain
+   - Scenario 8: ❌ Missing required variable
+
+3. **Run the app:**
+   ```bash
    npm run dev
    ```
-   The app should crash with a clear error message.
 
-2. **Test with valid URL:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your actual Jira URL
-   npm run dev
-   ```
-   The app should start successfully.
+4. **Observe the result:**
+   - ✅ Valid scenarios: App starts successfully
+   - ❌ Invalid scenarios: App crashes with clear error message
+
+### Example: Testing Invalid Email
+
+Edit `.env` and uncomment Scenario 5:
+```bash
+# Comment out Scenario 1
+# JIRA_BASE_URL=https://test-domain.atlassian.net
+# JIRA_EMAIL=test@example.com
+# JIRA_API_TOKEN=test-token-123
+
+# Uncomment Scenario 5
+JIRA_BASE_URL=https://test-domain.atlassian.net
+JIRA_EMAIL=notanemail
+JIRA_API_TOKEN=test-token-123
+```
+
+Run `npm run dev` and you'll see:
+```
+Error: Invalid JIRA_EMAIL: Must be a valid email address.
+Jira Cloud API requires your Atlassian account email for authentication.
+Expected format: user@example.com
+Received: notanemail
+```
 
 ---
 
