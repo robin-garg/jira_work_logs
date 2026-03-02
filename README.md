@@ -1,0 +1,90 @@
+# Node.js Backend Service with TypeScript
+
+A clean, production-ready Node.js backend service built with TypeScript and Express.
+
+## 🚀 Tech Stack
+
+- **Node.js** with **TypeScript**
+- **Express** - Web framework
+- **Axios** - HTTP client
+- **dotenv** - Environment variable management
+- **ts-node-dev** - Development server with auto-reload
+
+## 📁 Project Structure
+
+```
+src/
+  ├── server.ts       # Main application entry point
+  ├── routes/         # API route definitions
+  ├── controllers/    # Request handlers
+  ├── services/       # Business logic
+  ├── config/         # Configuration files
+  └── utils/          # Utility functions
+```
+
+## 🛠️ Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Create environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Configure environment variables:**
+   Edit `.env` and set your configuration values.
+
+## 📜 Available Scripts
+
+- **`npm run dev`** - Start development server with auto-reload
+- **`npm run build`** - Compile TypeScript to JavaScript
+- **`npm start`** - Run production server
+
+## 🏃 Running the Application
+
+### Development Mode
+```bash
+npm run dev
+```
+
+### Production Mode
+```bash
+npm run build
+npm start
+```
+
+## 🔍 Health Check
+
+Once the server is running, you can verify it's working:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
+```json
+{
+  "status": "OK",
+  "timestamp": "2026-02-16T...",
+  "uptime": 1.234
+}
+```
+
+## 🌐 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `3000` |
+
+## 📝 Next Steps
+
+The project structure is ready for you to add:
+- API routes in `src/routes/`
+- Controllers in `src/controllers/`
+- Business logic in `src/services/`
+- Configuration in `src/config/`
+- Utility functions in `src/utils/`
+
