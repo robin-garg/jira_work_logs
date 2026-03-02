@@ -79,7 +79,7 @@ Expected response:
 |----------|-------------|---------|------------|
 | `PORT` | Server port | `3000` | - |
 | `JIRA_BASE_URL` | Jira instance URL | **Required** | Must be valid HTTP/HTTPS URL |
-| `JIRA_EMAIL` | Jira account email | **Required** | Must not be empty |
+| `JIRA_EMAIL` | Jira account email | **Required** | Must be valid email format |
 | `JIRA_API_TOKEN` | Jira API token | **Required** | Must not be empty |
 
 ### ✅ URL Validation
@@ -95,6 +95,20 @@ The `JIRA_BASE_URL` is validated to ensure it's a proper URL:
 - ❌ `abc` - Not a valid URL
 - ❌ `your-domain.atlassian.net` - Missing protocol (https://)
 - ❌ `ftp://jira.company.com` - Wrong protocol (must be http/https)
+
+### ✅ Email Validation
+
+The `JIRA_EMAIL` is validated to ensure it's a proper email address (required by Jira Cloud API):
+
+**Valid examples:**
+- ✅ `user@example.com`
+- ✅ `john.doe@company.com`
+- ✅ `admin@atlassian.net`
+
+**Invalid examples:**
+- ❌ `notanemail` - Not a valid email format
+- ❌ `userexample.com` - Missing @ symbol
+- ❌ `user@` - Missing domain
 
 If validation fails, the app will crash at startup with a clear error message.
 

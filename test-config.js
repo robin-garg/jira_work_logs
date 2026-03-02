@@ -57,8 +57,42 @@ try {
   console.log(`   ${error.message}\n`);
 }
 
-// Test 4: With valid environment variables (should succeed)
-console.log('Test 4: Testing with valid environment variables...\n');
+// Test 4: Invalid email format (should fail)
+console.log('Test 4: Testing with invalid email format...\n');
+
+process.env.JIRA_BASE_URL = 'https://test.atlassian.net';
+process.env.JIRA_EMAIL = 'notanemail';  // Invalid email
+process.env.JIRA_API_TOKEN = 'test-token-123';
+
+delete require.cache[require.resolve('./dist/config/jira.config.js')];
+
+try {
+  require('./dist/config/jira.config.js');
+  console.log('❌ FAILED: Config should have thrown an error for invalid email\n');
+} catch (error) {
+  console.log('✅ PASSED: Config correctly rejected invalid email:');
+  console.log(`   ${error.message}\n`);
+}
+
+// Test 5: Email missing @ symbol (should fail)
+console.log('Test 5: Testing with email missing @ symbol...\n');
+
+process.env.JIRA_BASE_URL = 'https://test.atlassian.net';
+process.env.JIRA_EMAIL = 'userexample.com';  // Missing @
+process.env.JIRA_API_TOKEN = 'test-token-123';
+
+delete require.cache[require.resolve('./dist/config/jira.config.js')];
+
+try {
+  require('./dist/config/jira.config.js');
+  console.log('❌ FAILED: Config should have thrown an error for email without @\n');
+} catch (error) {
+  console.log('✅ PASSED: Config correctly rejected email without @:');
+  console.log(`   ${error.message}\n`);
+}
+
+// Test 6: With valid environment variables (should succeed)
+console.log('Test 6: Testing with valid environment variables...\n');
 
 process.env.JIRA_BASE_URL = 'https://test.atlassian.net';
 process.env.JIRA_EMAIL = 'test@example.com';

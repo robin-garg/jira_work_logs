@@ -63,6 +63,24 @@ function validateUrl(url: string, varName: string): void {
 }
 
 /**
+ * Validates that an email address is properly formatted
+ * Uses a simple but effective regex pattern for email validation
+ */
+function validateEmail(email: string, varName: string): void {
+  // RFC 5322 compliant email regex (simplified version)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    throw new Error(
+      `Invalid ${varName}: Must be a valid email address.\n` +
+      `Jira Cloud API requires your Atlassian account email for authentication.\n` +
+      `Expected format: user@example.com\n` +
+      `Received: ${email}`
+    );
+  }
+}
+
+/**
  * Load and validate Jira configuration
  * This function is called immediately when the module is imported
  */
@@ -73,6 +91,10 @@ function loadJiraConfig(): JiraConfig {
 
   // Validate that baseUrl is a proper URL
   validateUrl(baseUrl, 'JIRA_BASE_URL');
+
+  // Validate that email is a proper email address
+  // Jira Cloud API requires email for authentication
+  validateEmail(email, 'JIRA_EMAIL');
 
   return {
     baseUrl,
