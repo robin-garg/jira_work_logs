@@ -75,9 +75,28 @@ Expected response:
 
 ## 🌐 Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server port | `3000` |
+| Variable | Description | Default | Validation |
+|----------|-------------|---------|------------|
+| `PORT` | Server port | `3000` | - |
+| `JIRA_BASE_URL` | Jira instance URL | **Required** | Must be valid HTTP/HTTPS URL |
+| `JIRA_EMAIL` | Jira account email | **Required** | Must not be empty |
+| `JIRA_API_TOKEN` | Jira API token | **Required** | Must not be empty |
+
+### ✅ URL Validation
+
+The `JIRA_BASE_URL` is validated to ensure it's a proper URL:
+
+**Valid examples:**
+- ✅ `https://your-domain.atlassian.net`
+- ✅ `https://jira.company.com`
+- ✅ `http://localhost:8080` (for local testing)
+
+**Invalid examples:**
+- ❌ `abc` - Not a valid URL
+- ❌ `your-domain.atlassian.net` - Missing protocol (https://)
+- ❌ `ftp://jira.company.com` - Wrong protocol (must be http/https)
+
+If validation fails, the app will crash at startup with a clear error message.
 
 ## 📝 Next Steps
 
