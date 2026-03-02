@@ -127,6 +127,41 @@ npm run dev
 
 See `VALIDATION_EXAMPLES.md` for detailed testing instructions and examples.
 
+## 🛠️ Utilities
+
+### Date Utility (`src/utils/date.util.ts`)
+
+Provides date formatting for Jira API integration.
+
+#### `formatWorklogDate(optionalDate?: string): string`
+
+Formats dates to Jira-compatible worklog format: `YYYY-MM-DDTHH:mm:ss.SSS+0000`
+
+**Usage:**
+
+```typescript
+import { formatWorklogDate } from './utils/date.util';
+
+// Use current date
+const now = formatWorklogDate();
+// "2026-03-02T14:30:45.123+0000"
+
+// Use specific date
+const specific = formatWorklogDate('2026-01-15');
+// "2026-01-15T00:00:00.000+0000"
+
+// Use ISO date string
+const iso = formatWorklogDate('2026-01-15T10:30:00Z');
+// "2026-01-15T10:30:00.000+0000"
+```
+
+**Features:**
+- ✅ No external dependencies (uses native Date)
+- ✅ Validates date input
+- ✅ UTC timezone (+0000)
+- ✅ Proper milliseconds padding (3 digits)
+- ✅ Throws clear errors for invalid dates
+
 ## 📝 Next Steps
 
 The project structure is ready for you to add:
