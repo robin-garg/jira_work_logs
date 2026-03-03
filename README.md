@@ -162,6 +162,60 @@ const iso = formatWorklogDate('2026-01-15T10:30:00Z');
 - ✅ Proper milliseconds padding (3 digits)
 - ✅ Throws clear errors for invalid dates
 
+## 🔧 Services
+
+### Jira Service (`src/services/jira.service.ts`)
+
+Provides methods to interact with Jira REST API.
+
+#### `JiraService.addWorklog()`
+
+Adds a worklog entry to a Jira issue.
+
+**Usage:**
+
+```typescript
+import { JiraService } from './services/jira.service';
+import { formatWorklogDate } from './utils/date.util';
+
+const jiraService = new JiraService();
+
+await jiraService.addWorklog(
+  'PROJ-123',                           // Issue ID
+  'Fixed authentication bug',           // Comment/message
+  '2h 30m',                             // Time spent
+  formatWorklogDate()                   // Started date (Jira format)
+);
+```
+
+**Parameters:**
+- `issueId` (string) - The Jira issue ID (e.g., "PROJ-123")
+- `message` (string) - The worklog comment/description
+- `timeSpent` (string) - Time spent in Jira format (e.g., "2h 30m", "1d", "45m")
+- `startedDate` (string) - When work started (format: YYYY-MM-DDTHH:mm:ss.SSS+0000)
+
+**Features:**
+- ✅ Basic Authentication with email + API token
+- ✅ Automatic Base64 encoding of credentials
+- ✅ Clean error handling (no stack traces exposed)
+- ✅ Extracts meaningful error messages from Jira API
+- ✅ Network error detection
+- ✅ Type-safe with TypeScript
+
+**Error Handling:**
+
+The service throws clean, readable errors:
+
+```typescript
+try {
+  await jiraService.addWorklog('INVALID-999', 'Test', '1h', formatWorklogDate());
+} catch (error) {
+  // Error: Failed to add worklog to issue INVALID-999.
+  // Status: 404
+  // Error: Issue does not exist or you do not have permission to see it.
+}
+```
+
 ## 📝 Next Steps
 
 The project structure is ready for you to add:
