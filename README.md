@@ -216,6 +216,67 @@ try {
 }
 ```
 
+## 🎮 Controllers
+
+### Worklog Controller (`src/controllers/worklog.controller.ts`)
+
+Handles HTTP requests for worklog operations.
+
+#### `WorklogController.createWorklog()`
+
+Creates a new worklog entry for a Jira issue.
+
+**Request Body:**
+
+```json
+{
+  "issueId": "PROJ-123",      // Required: Jira issue ID
+  "message": "Fixed bug",     // Required: Worklog comment
+  "timeSpent": "2h 30m",      // Required: Time spent (Jira format)
+  "date": "2026-03-01"        // Optional: When work started (ISO date)
+}
+```
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "message": "Worklog added successfully"
+}
+```
+
+**Validation Error Response (400):**
+
+```json
+{
+  "success": false,
+  "message": "Validation failed: issueId is required and must be a non-empty string"
+}
+```
+
+**Server Error Response (500):**
+
+```json
+{
+  "success": false,
+  "message": "Failed to add worklog to issue PROJ-123..."
+}
+```
+
+**Validation Rules:**
+- ✅ `issueId` - Required, non-empty string
+- ✅ `message` - Required, non-empty string
+- ✅ `timeSpent` - Required, non-empty string
+- ✅ `date` - Optional, valid date string
+
+**Features:**
+- ✅ Comprehensive input validation
+- ✅ Clean error messages (no stack traces)
+- ✅ Automatic date formatting with `formatWorklogDate()`
+- ✅ Uses `JiraService` for API calls
+- ✅ Type-safe with TypeScript
+
 ## 📝 Next Steps
 
 The project structure is ready for you to add:
