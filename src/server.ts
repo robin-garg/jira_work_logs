@@ -1,17 +1,16 @@
-import express, { Request, Response, Application } from 'express';
+import express, { Application, Request, Response } from 'express';
 import dotenv from 'dotenv';
+import { jiraConfigs } from './config/jira.config';
+import { WorklogController } from './controllers/worklog.controller';
 
 // This loads .env into: process.env
 // Without this, your environment variables won’t exist in local dev.
 // In production (like Docker), you may not need it.
 dotenv.config();
 
-// Import and validate Jira configuration
-// If validation fails, the app will crash here at startup
-import { jiraConfig } from './config/jira.config';
-
 const app: Application = express();
-const PORT: number = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const worklogController = new WorklogController();
 
 // Middleware
 
@@ -23,6 +22,7 @@ into:
 req.body.issueId
 Without this, req.body would be undefined.
 */
+
 app.use(express.json());
 /*
 This is for handling:
@@ -48,12 +48,16 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+app.post('/worklogs', (req: Request, res: Response) => {
+  void worklogController.createWorklog(req, res);
+});
+
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📍 Health check available at http://localhost:${PORT}/health`);
-  console.log(`✅ Jira configured for: ${jiraConfig.baseUrl}`);
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Health check available at http://localhost:${PORT}/health`);
+  console.log(`Personal Jira configured for: ${jiraConfigs.personal.baseUrl}`);
+  console.log(`Client Jira configured for: ${jiraConfigs.client.baseUrl}`);
 });
 
 export default app;
-

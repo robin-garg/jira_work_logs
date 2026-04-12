@@ -6,8 +6,8 @@
  */
 
 import { Request, Response } from 'express';
-import { JiraService } from '../services/jira.service';
-import { formatWorklogDate } from '../utils/date.util';
+import { WorklogService } from '../services/worklog.service';
+import { ApiResponse, CreateWorklogInput, JiraInstanceType } from '../types/worklog.types';
 
 /**
  * WorklogController class
@@ -15,119 +15,86 @@ import { formatWorklogDate } from '../utils/date.util';
  * Handles all worklog-related HTTP requests.
  */
 export class WorklogController {
-  /**
-   * Creates a new worklog entry for a Jira issue
-   * 
-   * Expected request body:
-   * {
-   *   issueId: string (required) - The Jira issue ID (e.g., "PROJ-123")
-   *   message: string (required) - The worklog comment/description
-   *   timeSpent: string (required) - Time spent (e.g., "2h 30m", "1d", "45m")
-   *   date: string (optional) - When work started (ISO date string)
-   * }
-   * 
-   * Success response (200):
-   * {
-   *   success: true,
-   *   message: "Worklog added successfully"
-   * }
-   * 
-   * Validation error response (400):
-   * {
-   *   success: false,
-   *   message: "Validation error message"
-   * }
-   * 
-   * Server error response (500):
-   * {
-   *   success: false,
-   *   message: "Error message"
-   * }
-   * 
-   * @param req - Express Request object
-   * @param res - Express Response object
-   */
+  constructor(private readonly worklogService: WorklogService = new WorklogService()) {}
+
   async createWorklog(req: Request, res: Response): Promise<void> {
+    const validationResult = this.validateRequestBody(req.body);
+
+    if (!validationResult.success) {
+      res.status(400).json(validationResult);
+      return;
+    }
+
     try {
-      // Extract fields from request body
-      const { issueId, message, timeSpent, date } = req.body;
+      const requestData = validationResult.data;
 
-      // Validation: Check required fields
-      // issueId is required
-      if (!issueId || typeof issueId !== 'string' || issueId.trim() === '') {
+      if (!requestData) {
         res.status(400).json({
           success: false,
-          message: 'Validation failed: issueId is required and must be a non-empty string',
+          error: 'Request validation failed.',
         });
         return;
       }
 
-      // message is required
-      if (!message || typeof message !== 'string' || message.trim() === '') {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed: message is required and must be a non-empty string',
-        });
-        return;
-      }
-
-      // timeSpent is required
-      if (!timeSpent || typeof timeSpent !== 'string' || timeSpent.trim() === '') {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed: timeSpent is required and must be a non-empty string',
-        });
-        return;
-      }
-
-      // date is optional, but if provided, must be a string
-      if (date !== undefined && typeof date !== 'string') {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed: date must be a string if provided',
-        });
-        return;
-      }
-
-      // Format the date for Jira
-      // If date is provided, use it; otherwise, use current date
-      let startedDate: string;
-      try {
-        startedDate = formatWorklogDate(date);
-      } catch (error) {
-        // Date formatting failed (invalid date format)
-        res.status(400).json({
-          success: false,
-          message: `Validation failed: ${(error as Error).message}`,
-        });
-        return;
-      }
-
-      // Create JiraService instance
-      const jiraService = new JiraService();
-
-      // Call the service to add worklog
-      await jiraService.addWorklog(
-        issueId.trim(),
-        message.trim(),
-        timeSpent.trim(),
-        startedDate
-      );
+      const result = await this.worklogService.createWorklog(requestData);
 
       // Success response
       res.status(200).json({
         success: true,
-        message: 'Worklog added successfully',
+        data: result,
       });
-
     } catch (error) {
-      // Handle any errors from the service layer
-      // Return 500 with clean error message (no stack traces)
-      res.status(500).json({
+      const message = (error as Error).message;
+      const statusCode = message.toLowerCase().includes('invalid') ? 400 : 500;
+
+      res.status(statusCode).json({
         success: false,
-        message: (error as Error).message,
+        error: message,
       });
     }
+  }
+
+  private validateRequestBody(body: unknown): ApiResponse<CreateWorklogInput> {
+    if (!body || typeof body !== 'object') {
+      return { success: false, error: 'Request body must be a JSON object.' };
+    }
+
+    const { type, issueId, message, timeSpent, date } = body as Partial<CreateWorklogInput>;
+
+    if (!this.isValidJiraType(type)) {
+      return { success: false, error: 'type is required and must be either "personal" or "client".' };
+    }
+
+    if (typeof issueId !== 'string' || issueId.trim() === '') {
+      return { success: false, error: 'issueId is required and must be a non-empty string.' };
+    }
+
+    if (typeof message !== 'string' || message.trim() === '') {
+      return { success: false, error: 'message is required and must be a non-empty string.' };
+    }
+
+    if (typeof timeSpent !== 'string' || timeSpent.trim() === '') {
+      return { success: false, error: 'timeSpent is required and must be a non-empty string.' };
+    }
+
+    if (date !== undefined && (typeof date !== 'string' || date.trim() === '')) {
+      return { success: false, error: 'date must be a non-empty string when provided.' };
+    }
+
+    return {
+      success: true,
+      data: {
+        type,
+        issueId: issueId.trim(),
+        message: message.trim(),
+        timeSpent: timeSpent.trim(),
+        date: date?.trim(),
+      },
+    };
+  }
+
+  private isValidJiraType(type: unknown): type is JiraInstanceType {
+    return type === 'personal' || type === 'client';
   }
 }
 

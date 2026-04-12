@@ -6,7 +6,24 @@
  */
 
 import axios, { AxiosError } from 'axios';
-import { jiraConfig } from '../config/jira.config';
+import { JiraConfig } from '../types/worklog.types';
+import { parseTimeToSeconds } from '../utils/time.util';
+
+interface AddWorklogParams {
+  issueId: string;
+  message: string;
+  timeSpent: string;
+  started: string;
+}
+
+interface JiraWorklogResponse {
+  id?: string;
+}
+
+interface AddWorklogResult {
+  worklogId?: string;
+  timeSpentSeconds: number;
+}
 
 /**
  * JiraService class
@@ -14,6 +31,8 @@ import { jiraConfig } from '../config/jira.config';
  * Handles all Jira API interactions including worklog management.
  */
 export class JiraService {
+  constructor(private readonly config: JiraConfig) {}
+
   /**
    * Builds the Basic Authentication header
    * 
@@ -23,13 +42,8 @@ export class JiraService {
    * @returns Authorization header value
    */
   private buildAuthHeader(): string {
-    // Combine email and API token with colon separator
-    const credentials = `${jiraConfig.email}:${jiraConfig.apiToken}`;
-    
-    // Encode to Base64 using Node.js Buffer
+    const credentials = `${this.config.email}:${this.config.apiToken}`;
     const base64Credentials = Buffer.from(credentials).toString('base64');
-    
-    // Return in Basic Auth format
     return `Basic ${base64Credentials}`;
   }
 
@@ -51,86 +65,75 @@ export class JiraService {
    *   '2026-03-02T14:30:00.000+0000'
    * );
    */
-  async addWorklog(
-    issueId: string,
-    message: string,
-    timeSpent: string,
-    startedDate: string
-  ): Promise<void> {
-    // Build the Jira API endpoint URL
-    const url = `${jiraConfig.baseUrl}/rest/api/3/issue/${issueId}/worklog`;
+  async addWorklog(params: AddWorklogParams): Promise<AddWorklogResult> {
+    const url = `${this.config.baseUrl}/rest/api/3/issue/${params.issueId}/worklog`;
+    const timeSpentSeconds = parseTimeToSeconds(params.timeSpent);
 
-    // Build the request body according to Jira API specification
     const requestBody = {
-      comment: message,
-      timeSpent: timeSpent,
-      started: startedDate,
+      comment: params.message,
+      started: params.started,
+      timeSpentSeconds,
     };
 
     try {
-      // Make POST request to Jira API
-      await axios.post(url, requestBody, {
+      const response = await axios.post<JiraWorklogResponse>(url, requestBody, {
         headers: {
-          'Authorization': this.buildAuthHeader(),
+          Authorization: this.buildAuthHeader(),
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       });
 
-      // Success - no need to return anything (Promise<void>)
+      return {
+        worklogId: response.data?.id,
+        timeSpentSeconds,
+      };
     } catch (error) {
-      // Handle errors and throw clean, readable messages
       if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError;
-
-        // Extract meaningful error information from Jira response
-        if (axiosError.response) {
-          // Jira returned an error response
-          const status = axiosError.response.status;
-          const data = axiosError.response.data as any;
-
-          // Try to extract error message from Jira response
-          let errorMessage = 'Unknown error';
-          
-          if (data && typeof data === 'object') {
-            // Jira error responses can have different formats
-            if (data.errorMessages && Array.isArray(data.errorMessages) && data.errorMessages.length > 0) {
-              errorMessage = data.errorMessages.join(', ');
-            } else if (data.errors && typeof data.errors === 'object') {
-              errorMessage = Object.values(data.errors).join(', ');
-            } else if (data.message) {
-              errorMessage = data.message;
-            }
-          }
-
-          // Throw clean error with status and message
-          throw new Error(
-            `Failed to add worklog to issue ${issueId}.\n` +
-            `Status: ${status}\n` +
-            `Error: ${errorMessage}`
-          );
-        } else if (axiosError.request) {
-          // Request was made but no response received (network error)
-          throw new Error(
-            `Failed to add worklog to issue ${issueId}.\n` +
-            `Network error: No response from Jira server.\n` +
-            `Please check your network connection and Jira URL.`
-          );
-        } else {
-          // Error setting up the request
-          throw new Error(
-            `Failed to add worklog to issue ${issueId}.\n` +
-            `Error: ${axiosError.message}`
-          );
-        }
-      } else {
-        // Non-Axios error (shouldn't happen, but handle it)
-        throw new Error(
-          `Failed to add worklog to issue ${issueId}.\n` +
-          `Error: ${(error as Error).message}`
-        );
+        throw new Error(this.buildJiraErrorMessage(error, params.issueId));
       }
+
+      throw new Error(`Failed to add worklog to issue ${params.issueId}: ${(error as Error).message}`);
     }
+  }
+
+  private buildJiraErrorMessage(error: AxiosError, issueId: string): string {
+    if (error.response) {
+      const jiraMessage = this.extractJiraErrorMessage(error.response.data);
+      return `Failed to add worklog to issue ${issueId}: ${jiraMessage}`;
+    }
+
+    if (error.request) {
+      return `Failed to add worklog to issue ${issueId}: Jira did not respond. Check the Jira URL and network connectivity.`;
+    }
+
+    return `Failed to add worklog to issue ${issueId}: ${error.message}`;
+  }
+
+  private extractJiraErrorMessage(data: unknown): string {
+    if (!data || typeof data !== 'object') {
+      return 'Jira returned an unknown error.';
+    }
+
+    const jiraError = data as {
+      message?: string;
+      errorMessages?: string[];
+      errors?: Record<string, string>;
+    };
+
+    if (Array.isArray(jiraError.errorMessages) && jiraError.errorMessages.length > 0) {
+      return jiraError.errorMessages.join(', ');
+    }
+
+    if (jiraError.errors && Object.keys(jiraError.errors).length > 0) {
+      return Object.values(jiraError.errors).join(', ');
+    }
+
+    if (jiraError.message) {
+      return jiraError.message;
+    }
+
+    return 'Jira returned an unknown error.';
   }
 }
 

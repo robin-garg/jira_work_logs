@@ -1,16 +1,4 @@
-/**
- * Jira Configuration Module
- * 
- * This module validates and exports Jira configuration from environment variables.
- * If any required variable is missing, it throws an error immediately.
- * This ensures the app crashes at startup if misconfigured.
- */
-
-interface JiraConfig {
-  baseUrl: string;
-  email: string;
-  apiToken: string;
-}
+import { JiraConfig, JiraInstanceType } from '../types/worklog.types';
 
 /**
  * Validates that a required environment variable exists and is not empty
@@ -84,26 +72,29 @@ function validateEmail(email: string, varName: string): void {
  * Load and validate Jira configuration
  * This function is called immediately when the module is imported
  */
-function loadJiraConfig(): JiraConfig {
-  const baseUrl = getRequiredEnvVar('JIRA_BASE_URL');
-  const email = getRequiredEnvVar('JIRA_EMAIL');
-  const apiToken = getRequiredEnvVar('JIRA_API_TOKEN');
+function loadSingleJiraConfig(prefix: 'PERSONAL' | 'CLIENT'): JiraConfig {
+  const baseUrl = getRequiredEnvVar(`${prefix}_JIRA_BASE_URL`);
+  const email = getRequiredEnvVar(`${prefix}_JIRA_EMAIL`);
+  const apiToken = getRequiredEnvVar(`${prefix}_JIRA_API_TOKEN`);
 
-  // Validate that baseUrl is a proper URL
-  validateUrl(baseUrl, 'JIRA_BASE_URL');
+  validateUrl(baseUrl, `${prefix}_JIRA_BASE_URL`);
+  validateEmail(email, `${prefix}_JIRA_EMAIL`);
 
-  // Validate that email is a proper email address
-  // Jira Cloud API requires email for authentication
-  validateEmail(email, 'JIRA_EMAIL');
-
-  return {
-    baseUrl,
-    email,
-    apiToken,
-  };
+  return { baseUrl, email, apiToken };
 }
 
-// Load configuration once when module is imported
-// If validation fails, this will throw and crash the app at startup
-export const jiraConfig: JiraConfig = loadJiraConfig();
+export const jiraConfigs: Record<JiraInstanceType, JiraConfig> = {
+  personal: loadSingleJiraConfig('PERSONAL'),
+  client: loadSingleJiraConfig('CLIENT'),
+};
+
+export function getJiraConfigByType(type: JiraInstanceType): JiraConfig {
+  const config = jiraConfigs[type];
+
+  if (!config) {
+    throw new Error(`Unsupported Jira type: ${type}`);
+  }
+
+  return config;
+}
 
