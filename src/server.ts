@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { jiraConfigs } from './config/jira.config';
 import { WorklogController } from './controllers/worklog.controller';
+import { WorklogService } from './services/worklog.service';
 
 // This loads .env into: process.env
 // Without this, your environment variables won’t exist in local dev.
@@ -10,7 +11,8 @@ dotenv.config();
 
 const app: Application = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const worklogController = new WorklogController();
+const worklogService = new WorklogService();
+const worklogController = new WorklogController(worklogService);
 
 // Middleware
 
@@ -22,7 +24,6 @@ into:
 req.body.issueId
 Without this, req.body would be undefined.
 */
-
 app.use(express.json());
 /*
 This is for handling:
@@ -48,8 +49,8 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-app.post('/worklogs', (req: Request, res: Response) => {
-  void worklogController.createWorklog(req, res);
+app.post('/worklog', async (req: Request, res: Response) => {
+  await worklogController.createWorklog(req, res);
 });
 
 // Start server

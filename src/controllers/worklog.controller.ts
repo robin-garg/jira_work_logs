@@ -6,7 +6,9 @@
  */
 
 import { Request, Response } from 'express';
-import { WorklogService } from '../services/worklog.service';
+import { getJiraConfigByType } from '../config/jira.config';
+import { JiraService } from '../services/jira.service';
+import { WorklogService, WorklogValidationError } from '../services/worklog.service';
 import { ApiResponse, CreateWorklogInput, JiraInstanceType } from '../types/worklog.types';
 
 /**
@@ -15,7 +17,7 @@ import { ApiResponse, CreateWorklogInput, JiraInstanceType } from '../types/work
  * Handles all worklog-related HTTP requests.
  */
 export class WorklogController {
-  constructor(private readonly worklogService: WorklogService = new WorklogService()) {}
+  constructor(private readonly worklogService: WorklogService) {}
 
   async createWorklog(req: Request, res: Response): Promise<void> {
     const validationResult = this.validateRequestBody(req.body);
@@ -36,7 +38,9 @@ export class WorklogController {
         return;
       }
 
-      const result = await this.worklogService.createWorklog(requestData);
+      const jiraConfig = getJiraConfigByType(requestData.type);
+      const jiraService = new JiraService(jiraConfig);
+      const result = await this.worklogService.createWorklog(requestData, jiraService);
 
       // Success response
       res.status(200).json({
@@ -45,7 +49,7 @@ export class WorklogController {
       });
     } catch (error) {
       const message = (error as Error).message;
-      const statusCode = message.toLowerCase().includes('invalid') ? 400 : 500;
+      const statusCode = error instanceof WorklogValidationError ? 400 : 500;
 
       res.status(statusCode).json({
         success: false,
@@ -97,4 +101,3 @@ export class WorklogController {
     return type === 'personal' || type === 'client';
   }
 }
-

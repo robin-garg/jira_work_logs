@@ -57,7 +57,6 @@ export class JiraService {
    * @throws Error if the API request fails with a clean, readable message
    * 
    * @example
-   * const jiraService = new JiraService();
    * await jiraService.addWorklog(
    *   'PROJ-123',
    *   'Fixed bug in authentication',

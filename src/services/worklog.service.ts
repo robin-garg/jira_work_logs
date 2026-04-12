@@ -1,26 +1,26 @@
-import { getJiraConfigByType } from '../config/jira.config';
 import { JiraService } from './jira.service';
 import { formatWorklogDate } from '../utils/date.util';
-import {
-  CreateWorklogInput,
-  CreateWorklogResult,
-  JiraConfig,
-  JiraInstanceType,
-} from '../types/worklog.types';
+import { CreateWorklogInput, CreateWorklogResult } from '../types/worklog.types';
 
-type JiraConfigResolver = (type: JiraInstanceType) => JiraConfig;
-type JiraServiceFactory = (config: JiraConfig) => JiraService;
+export class WorklogValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'WorklogValidationError';
+  }
+}
 
 export class WorklogService {
-  constructor(
-    private readonly resolveJiraConfig: JiraConfigResolver = getJiraConfigByType,
-    private readonly createJiraService: JiraServiceFactory = (config) => new JiraService(config),
-  ) {}
+  async createWorklog(
+    input: CreateWorklogInput,
+    jiraService: JiraService,
+  ): Promise<CreateWorklogResult> {
+    let started: string;
 
-  async createWorklog(input: CreateWorklogInput): Promise<CreateWorklogResult> {
-    const started = formatWorklogDate(input.date);
-    const jiraConfig = this.resolveJiraConfig(input.type);
-    const jiraService = this.createJiraService(jiraConfig);
+    try {
+      started = formatWorklogDate(input.date);
+    } catch (error) {
+      throw new WorklogValidationError((error as Error).message);
+    }
 
     const jiraResult = await jiraService.addWorklog({
       issueId: input.issueId,
