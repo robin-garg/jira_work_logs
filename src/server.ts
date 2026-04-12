@@ -1,8 +1,10 @@
 import express, { Application, Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { jiraConfigs } from './config/jira.config';
+import { getJiraConfigByType, jiraConfigs } from './config/jira.config';
 import { WorklogController } from './controllers/worklog.controller';
+import { JiraService } from './services/jira.service';
 import { WorklogService } from './services/worklog.service';
+import { JiraInstanceType } from './types/worklog.types';
 
 // This loads .env into: process.env
 // Without this, your environment variables won’t exist in local dev.
@@ -11,7 +13,12 @@ dotenv.config();
 
 const app: Application = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const worklogService = new WorklogService();
+const jiraServiceFactory = (type: JiraInstanceType): JiraService => {
+  const config = getJiraConfigByType(type);
+  return new JiraService(config);
+};
+
+const worklogService = new WorklogService(jiraServiceFactory);
 const worklogController = new WorklogController(worklogService);
 
 // Middleware

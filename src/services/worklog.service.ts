@@ -1,6 +1,10 @@
 import { JiraService } from './jira.service';
 import { formatWorklogDate } from '../utils/date.util';
-import { CreateWorklogInput, CreateWorklogResult } from '../types/worklog.types';
+import {
+  CreateWorklogInput,
+  CreateWorklogResult,
+  JiraInstanceType,
+} from '../types/worklog.types';
 
 export class WorklogValidationError extends Error {
   constructor(message: string) {
@@ -10,10 +14,12 @@ export class WorklogValidationError extends Error {
 }
 
 export class WorklogService {
-  async createWorklog(
-    input: CreateWorklogInput,
-    jiraService: JiraService,
-  ): Promise<CreateWorklogResult> {
+  constructor(
+    private readonly jiraServiceFactory: (type: JiraInstanceType) => JiraService,
+  ) {}
+
+  async createWorklog(input: CreateWorklogInput): Promise<CreateWorklogResult> {
+    const jiraService = this.jiraServiceFactory(input.type);
     let started: string;
 
     try {

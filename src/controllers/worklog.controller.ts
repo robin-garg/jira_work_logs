@@ -6,10 +6,8 @@
  */
 
 import { Request, Response } from 'express';
-import { getJiraConfigByType } from '../config/jira.config';
-import { JiraService } from '../services/jira.service';
 import { WorklogService, WorklogValidationError } from '../services/worklog.service';
-import { ApiResponse, CreateWorklogInput, JiraInstanceType } from '../types/worklog.types';
+import { createWorklogSchema } from '../validation/worklog.schema';
 
 /**
  * WorklogController class
@@ -20,84 +18,39 @@ export class WorklogController {
   constructor(private readonly worklogService: WorklogService) {}
 
   async createWorklog(req: Request, res: Response): Promise<void> {
-    const validationResult = this.validateRequestBody(req.body);
+    const parsed = createWorklogSchema.safeParse(req.body);
 
-    if (!validationResult.success) {
-      res.status(400).json(validationResult);
+    if (!parsed.success) {
+      const errors = parsed.error.issues.map((issue) => ({
+        field: issue.path[0] as string,
+        message: issue.message,
+      }));
+
+      res.status(400).json({
+        success: false,
+        errors,
+      });
       return;
     }
 
+    const requestData = parsed.data;
+
     try {
-      const requestData = validationResult.data;
+      const result = await this.worklogService.createWorklog(requestData);
 
-      if (!requestData) {
-        res.status(400).json({
-          success: false,
-          error: 'Request validation failed.',
-        });
-        return;
-      }
-
-      const jiraConfig = getJiraConfigByType(requestData.type);
-      const jiraService = new JiraService(jiraConfig);
-      const result = await this.worklogService.createWorklog(requestData, jiraService);
-
-      // Success response
       res.status(200).json({
         success: true,
         data: result,
       });
     } catch (error) {
       const message = (error as Error).message;
-      const statusCode = error instanceof WorklogValidationError ? 400 : 500;
+      const statusCode =
+        error instanceof WorklogValidationError ? 400 : 500;
 
       res.status(statusCode).json({
         success: false,
         error: message,
       });
     }
-  }
-
-  private validateRequestBody(body: unknown): ApiResponse<CreateWorklogInput> {
-    if (!body || typeof body !== 'object') {
-      return { success: false, error: 'Request body must be a JSON object.' };
-    }
-
-    const { type, issueId, message, timeSpent, date } = body as Partial<CreateWorklogInput>;
-
-    if (!this.isValidJiraType(type)) {
-      return { success: false, error: 'type is required and must be either "personal" or "client".' };
-    }
-
-    if (typeof issueId !== 'string' || issueId.trim() === '') {
-      return { success: false, error: 'issueId is required and must be a non-empty string.' };
-    }
-
-    if (typeof message !== 'string' || message.trim() === '') {
-      return { success: false, error: 'message is required and must be a non-empty string.' };
-    }
-
-    if (typeof timeSpent !== 'string' || timeSpent.trim() === '') {
-      return { success: false, error: 'timeSpent is required and must be a non-empty string.' };
-    }
-
-    if (date !== undefined && (typeof date !== 'string' || date.trim() === '')) {
-      return { success: false, error: 'date must be a non-empty string when provided.' };
-    }
-
-    return {
-      success: true,
-      data: {
-        type,
-        issueId: issueId.trim(),
-        message: message.trim(),
-        timeSpent: timeSpent.trim(),
-        date: date?.trim(),
-      },
-    };
-  }
-
-  private isValidJiraType(type: unknown): type is JiraInstanceType {
-    return type === 'personal' || type === 'client';
   }
 }
