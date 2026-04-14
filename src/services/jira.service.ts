@@ -27,7 +27,7 @@ interface AddWorklogResult {
 
 /**
  * JiraService class
- * 
+ *
  * Handles all Jira API interactions including worklog management.
  */
 export class JiraService {
@@ -35,16 +35,43 @@ export class JiraService {
 
   /**
    * Builds the Basic Authentication header
-   * 
+   *
    * Jira Cloud API uses Basic Auth with email:apiToken encoded in Base64
    * Format: "Basic base64(email:apiToken)"
-   * 
+   *
    * @returns Authorization header value
    */
   private buildAuthHeader(): string {
     const credentials = `${this.config.email}:${this.config.apiToken}`;
     const base64Credentials = Buffer.from(credentials).toString('base64');
     return `Basic ${base64Credentials}`;
+  }
+
+  /**
+   * Converts plain text to Atlassian Document Format (ADF)
+   *
+   * Jira API v3 requires comments to be in ADF format, not plain text.
+   * This function converts a simple text string into the required ADF structure.
+   *
+   * @param text - Plain text message
+   * @returns ADF formatted comment object
+   */
+  private convertToADF(text: string): object {
+    return {
+      version: 1,
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: text,
+            },
+          ],
+        },
+      ],
+    };
   }
 
   /**
@@ -69,7 +96,7 @@ export class JiraService {
     const timeSpentSeconds = parseTimeToSeconds(params.timeSpent);
 
     const requestBody = {
-      comment: params.message,
+      comment: this.convertToADF(params.message),
       started: params.started,
       timeSpentSeconds,
     };

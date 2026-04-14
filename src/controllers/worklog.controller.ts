@@ -21,7 +21,7 @@ export class WorklogController {
     const parsed = createWorklogSchema.safeParse(req.body);
 
     if (!parsed.success) {
-      const errors = parsed.error.issues.map((issue) => ({
+      const errors = parsed.error.issues.map((issue: any) => ({
         field: issue.path[0] as string,
         message: issue.message,
       }));

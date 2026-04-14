@@ -1,15 +1,13 @@
-import express, { Application, Request, Response } from 'express';
+// IMPORTANT: Load environment variables FIRST before any other imports
 import dotenv from 'dotenv';
+dotenv.config();
+
+import express, { Application, Request, Response } from 'express';
 import { getJiraConfigByType, jiraConfigs } from './config/jira.config';
 import { WorklogController } from './controllers/worklog.controller';
 import { JiraService } from './services/jira.service';
 import { WorklogService } from './services/worklog.service';
 import { JiraInstanceType } from './types/worklog.types';
-
-// This loads .env into: process.env
-// Without this, your environment variables won’t exist in local dev.
-// In production (like Docker), you may not need it.
-dotenv.config();
 
 const app: Application = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
