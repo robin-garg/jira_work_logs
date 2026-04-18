@@ -1,13 +1,13 @@
 /**
  * Jira Service Module
- * 
+ *
  * Provides methods to interact with Jira REST API.
  * Handles authentication, request formatting, and error handling.
  */
 
 import axios, { AxiosError } from 'axios';
-import { JiraConfig } from '../types/worklog.types';
-import { parseTimeToSeconds } from '../utils/time.util';
+import { JiraConfig } from '../../types/worklog.types';
+import { parseTimeToSeconds } from '../../utils/time.util';
 
 interface AddWorklogParams {
   issueId: string;
@@ -66,7 +66,7 @@ export class JiraService {
           content: [
             {
               type: 'text',
-              text: text,
+              text,
             },
           ],
         },
@@ -76,13 +76,13 @@ export class JiraService {
 
   /**
    * Adds a worklog entry to a Jira issue
-   * 
+   *
    * @param issueId - The Jira issue ID (e.g., "PROJ-123")
    * @param message - The worklog comment/description
    * @param timeSpent - Time spent in Jira format (e.g., "2h 30m", "1d", "45m")
    * @param startedDate - When the work started (Jira format: YYYY-MM-DDTHH:mm:ss.SSS+0000)
    * @throws Error if the API request fails with a clean, readable message
-   * 
+   *
    * @example
    * await jiraService.addWorklog(
    *   'PROJ-123',
@@ -162,4 +162,3 @@ export class JiraService {
     return 'Jira returned an unknown error.';
   }
 }
-

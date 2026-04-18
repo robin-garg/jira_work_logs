@@ -19,7 +19,14 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/app/**/*",
+    "src/infrastructure/**/*",
+    "src/interfaces/**/*",
+    "src/types/**/*",
+    "src/utils/**/*",
+    "src/validation/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }
 

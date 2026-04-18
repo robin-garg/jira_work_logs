@@ -1,17 +1,17 @@
 /**
  * Worklog Controller Module
- * 
+ *
  * Handles HTTP requests for worklog operations.
  * Validates input, calls services, and returns appropriate responses.
  */
 
 import { Request, Response } from 'express';
-import { WorklogService, WorklogValidationError } from '../services/worklog.service';
-import { createWorklogSchema } from '../validation/worklog.schema';
+import { WorklogService, WorklogValidationError } from '../../app/worklog.service';
+import { createWorklogSchema } from '../../validation/worklog.schema';
 
 /**
  * WorklogController class
- * 
+ *
  * Handles all worklog-related HTTP requests.
  */
 export class WorklogController {

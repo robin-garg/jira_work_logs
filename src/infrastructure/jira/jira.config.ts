@@ -1,4 +1,4 @@
-import { JiraConfig, JiraInstanceType } from '../types/worklog.types';
+import { JiraConfig, JiraInstanceType } from '../../types/worklog.types';
 
 /**
  * Validates that a required environment variable exists and is not empty
@@ -9,7 +9,7 @@ function getRequiredEnvVar(key: string): string {
   if (!value || value.trim() === '') {
     throw new Error(
       `Missing required environment variable: ${key}\n` +
-      `Please set ${key} in your .env file or environment.`
+      `Please set ${key} in your .env file or environment.`,
     );
   }
 
@@ -27,7 +27,7 @@ function validateUrl(url: string, varName: string): void {
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
         `Invalid ${varName}: URL must use http:// or https:// protocol.\n` +
-        `Received: ${url}`
+        `Received: ${url}`,
       );
     }
 
@@ -35,7 +35,7 @@ function validateUrl(url: string, varName: string): void {
     if (!parsedUrl.hostname) {
       throw new Error(
         `Invalid ${varName}: URL must have a valid hostname.\n` +
-        `Received: ${url}`
+        `Received: ${url}`,
       );
     }
   } catch (error) {
@@ -43,7 +43,7 @@ function validateUrl(url: string, varName: string): void {
       throw new Error(
         `Invalid ${varName}: Not a valid URL format.\n` +
         `Expected format: https://your-domain.atlassian.net\n` +
-        `Received: ${url}`
+        `Received: ${url}`,
       );
     }
     throw error;
@@ -63,7 +63,7 @@ function validateEmail(email: string, varName: string): void {
       `Invalid ${varName}: Must be a valid email address.\n` +
       `Jira Cloud API requires your Atlassian account email for authentication.\n` +
       `Expected format: user@example.com\n` +
-      `Received: ${email}`
+      `Received: ${email}`,
     );
   }
 }
@@ -97,4 +97,3 @@ export function getJiraConfigByType(type: JiraInstanceType): JiraConfig {
 
   return config;
 }
-

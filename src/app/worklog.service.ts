@@ -1,4 +1,4 @@
-import { JiraService } from './jira.service';
+import { JiraService } from '../infrastructure/jira/jira.service';
 import { formatWorklogDate } from '../utils/date.util';
 import {
   CreateWorklogInput,
