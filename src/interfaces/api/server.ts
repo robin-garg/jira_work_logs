@@ -4,7 +4,7 @@ dotenv.config();
 
 import express, { Application, Request, Response } from 'express';
 import { WorklogService } from '../../app/worklog.service';
-import { getJiraConfigByType, jiraConfigs } from '../../infrastructure/jira/jira.config';
+import { getJiraConfigByType } from '../../infrastructure/jira/jira.config';
 import { JiraService } from '../../infrastructure/jira/jira.service';
 import { JiraInstanceType } from '../../types/worklog.types';
 import { WorklogController } from './worklog.controller';
@@ -37,8 +37,8 @@ app.post('/worklog', async (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Health check available at http://localhost:${PORT}/health`);
-  console.log(`Personal Jira configured for: ${jiraConfigs.personal.baseUrl}`);
-  console.log(`Client Jira configured for: ${jiraConfigs.client.baseUrl}`);
+  console.log(`Company Jira configured for: ${getJiraConfigByType('company').baseUrl}`);
+  console.log(`Client Jira configured for: ${getJiraConfigByType('client').baseUrl}`);
 });
 
 export default app;

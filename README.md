@@ -1,288 +1,108 @@
-# Node.js Backend Service with TypeScript
+# Jira Worklog MCP Server
 
-A clean, production-ready Node.js backend service built with TypeScript and Express.
+Log time to company or client Jira issues from an MCP client (Cursor, Claude Desktop, etc.).
 
-## 🚀 Tech Stack
+This started as a Node/TypeScript practice project. The HTTP API and CLI are supporting interfaces — the main product is the **MCP server**.
 
-- **Node.js** with **TypeScript**
-- **Express** - Web framework
-- **Axios** - HTTP client
-- **dotenv** - Environment variable management
-- **ts-node-dev** - Development server with auto-reload
+## Tech Stack
 
-## 📁 Project Structure
+- **Node.js** (≥ 18) with **TypeScript**
+- **Model Context Protocol SDK** — MCP server over stdio
+- **Axios** — Jira REST API v3 client
+- **Zod** — input validation
+- **yargs** — CLI (optional smoke-testing)
+- **Express** — optional HTTP API
+- **dotenv** — environment configuration
 
+## MCP Setup
+
+Requirements: Node.js 18+.
+
+### 1. Install and build
+
+From the project root:
+
+```bash
+npm run setup
 ```
-src/
-  ├── server.ts       # Main application entry point
-  ├── routes/         # API route definitions
-  ├── controllers/    # Request handlers
-  ├── services/       # Business logic
-  ├── config/         # Configuration files
-  └── utils/          # Utility functions
+
+This checks your Node version, installs dependencies, compiles TypeScript to `dist/`, creates `.env` from `.env.example` if needed, and prints an MCP client config block.
+
+### 2. Configure Jira credentials
+
+Edit `.env` with your Atlassian email and [API token](https://id.atlassian.com/manage-profile/security/api-tokens).
+
+You only need credentials for the instance(s) you use. Config is loaded lazily — missing the unused instance will not block MCP/CLI for the one you configure.
+
+```env
+# Company Jira
+COMPANY_JIRA_BASE_URL=https://your-company-domain.atlassian.net
+COMPANY_JIRA_EMAIL=your-company-email@example.com
+COMPANY_JIRA_API_TOKEN=your-company-api-token-here
+
+# Client Jira (optional if you only use company)
+CLIENT_JIRA_BASE_URL=https://your-client-domain.atlassian.net
+CLIENT_JIRA_EMAIL=your-client-email@example.com
+CLIENT_JIRA_API_TOKEN=your-client-api-token-here
 ```
 
-## 🛠️ Setup
+### 3. Register the MCP server
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+Add the block printed by `npm run setup` to your MCP client config (for example Cursor MCP settings or Claude Desktop `claude_desktop_config.json`):
 
-2. **Create environment file:**
-   ```bash
-   cp .env.example .env
-   ```
+```json
+{
+  "mcpServers": {
+    "jira-worklog": {
+      "command": "node",
+      "args": ["/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+    }
+  }
+}
+```
 
-3. **Configure environment variables:**
-   Edit `.env` and set your configuration values.
+Use the absolute path to this repo’s built MCP entry. Restart the MCP client, then call the `create_worklog` tool with `type` (`company` or `client`), `issueId`, `message`, `timeSpent`, and optional `date`.
 
-## 📜 Available Scripts
+**Optional check via CLI** (same core logic as MCP):
 
-- **`npm run dev`** - Start development server with auto-reload
-- **`npm run build`** - Compile TypeScript to JavaScript
-- **`npm start`** - Run production server
+```bash
+npm run cli -- --type company --issueId PROJ-123 --message "Test worklog" --timeSpent "1m"
+```
 
-## 🏃 Running the Application
+## Available Scripts
 
-### Development Mode
+| Script | Purpose |
+|--------|---------|
+| `npm run setup` | First-time install, build, `.env` scaffold, print MCP config |
+| `npm run mcp` | Run MCP server (stdio) via `ts-node` |
+| `npm run cli` | Log a worklog from the command line |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run dev` | Optional Express API with auto-reload |
+| `npm start` | Run compiled Express API |
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `COMPANY_JIRA_BASE_URL` | Company Jira base URL | When using `type: company` |
+| `COMPANY_JIRA_EMAIL` | Company Atlassian account email | When using `type: company` |
+| `COMPANY_JIRA_API_TOKEN` | Company Jira API token | When using `type: company` |
+| `CLIENT_JIRA_BASE_URL` | Client Jira base URL | When using `type: client` |
+| `CLIENT_JIRA_EMAIL` | Client Atlassian account email | When using `type: client` |
+| `CLIENT_JIRA_API_TOKEN` | Client Jira API token | When using `type: client` |
+| `PORT` | Express server port | Optional (default `3000`) |
+
+Base URLs must be `http://` or `https://`. Emails must be valid Atlassian account emails. Invalid or missing values for the instance you request produce a clear error when that instance is first used.
+
+## Optional: HTTP API
+
+For local practice or integrations outside MCP:
+
 ```bash
 npm run dev
 ```
 
-### Production Mode
-```bash
-npm run build
-npm start
-```
+- `GET /health` — health check
+- `POST /worklog` — same payload as the MCP tool (`type`, `issueId`, `message`, `timeSpent`, optional `date`)
 
-## 🔍 Health Check
-
-Once the server is running, you can verify it's working:
-
-```bash
-curl http://localhost:3000/health
-```
-
-Expected response:
-```json
-{
-  "status": "OK",
-  "timestamp": "2026-02-16T...",
-  "uptime": 1.234
-}
-```
-
-## 🌐 Environment Variables
-
-| Variable | Description | Default | Validation |
-|----------|-------------|---------|------------|
-| `PORT` | Server port | `3000` | - |
-| `JIRA_BASE_URL` | Jira instance URL | **Required** | Must be valid HTTP/HTTPS URL |
-| `JIRA_EMAIL` | Jira account email | **Required** | Must be valid email format |
-| `JIRA_API_TOKEN` | Jira API token | **Required** | Must not be empty |
-
-### ✅ URL Validation
-
-The `JIRA_BASE_URL` is validated to ensure it's a proper URL:
-
-**Valid examples:**
-- ✅ `https://your-domain.atlassian.net`
-- ✅ `https://jira.company.com`
-- ✅ `http://localhost:8080` (for local testing)
-
-**Invalid examples:**
-- ❌ `abc` - Not a valid URL
-- ❌ `your-domain.atlassian.net` - Missing protocol (https://)
-- ❌ `ftp://jira.company.com` - Wrong protocol (must be http/https)
-
-### ✅ Email Validation
-
-The `JIRA_EMAIL` is validated to ensure it's a proper email address (required by Jira Cloud API):
-
-**Valid examples:**
-- ✅ `user@example.com`
-- ✅ `john.doe@company.com`
-- ✅ `admin@atlassian.net`
-
-**Invalid examples:**
-- ❌ `notanemail` - Not a valid email format
-- ❌ `userexample.com` - Missing @ symbol
-- ❌ `user@` - Missing domain
-
-If validation fails, the app will crash at startup with a clear error message.
-
-## 🧪 Testing Validation
-
-A comprehensive test file (`.env.test`) is provided with 8 different validation scenarios:
-
-```bash
-# Copy the test file
-cp .env.test .env
-
-# Edit .env and uncomment ONE scenario at a time
-# Run the app to see validation in action
-npm run dev
-```
-
-See `VALIDATION_EXAMPLES.md` for detailed testing instructions and examples.
-
-## 🛠️ Utilities
-
-### Date Utility (`src/utils/date.util.ts`)
-
-Provides date formatting for Jira API integration.
-
-#### `formatWorklogDate(optionalDate?: string): string`
-
-Formats dates to Jira-compatible worklog format: `YYYY-MM-DDTHH:mm:ss.SSS+0000`
-
-**Usage:**
-
-```typescript
-import { formatWorklogDate } from './utils/date.util';
-
-// Use current date
-const now = formatWorklogDate();
-// "2026-03-02T14:30:45.123+0000"
-
-// Use specific date
-const specific = formatWorklogDate('2026-01-15');
-// "2026-01-15T00:00:00.000+0000"
-
-// Use ISO date string
-const iso = formatWorklogDate('2026-01-15T10:30:00Z');
-// "2026-01-15T10:30:00.000+0000"
-```
-
-**Features:**
-- ✅ No external dependencies (uses native Date)
-- ✅ Validates date input
-- ✅ UTC timezone (+0000)
-- ✅ Proper milliseconds padding (3 digits)
-- ✅ Throws clear errors for invalid dates
-
-## 🔧 Services
-
-### Jira Service (`src/services/jira.service.ts`)
-
-Provides methods to interact with Jira REST API.
-
-#### `JiraService.addWorklog()`
-
-Adds a worklog entry to a Jira issue.
-
-**Usage:**
-
-```typescript
-import { JiraService } from './services/jira.service';
-import { formatWorklogDate } from './utils/date.util';
-
-const jiraService = new JiraService();
-
-await jiraService.addWorklog(
-  'PROJ-123',                           // Issue ID
-  'Fixed authentication bug',           // Comment/message
-  '2h 30m',                             // Time spent
-  formatWorklogDate()                   // Started date (Jira format)
-);
-```
-
-**Parameters:**
-- `issueId` (string) - The Jira issue ID (e.g., "PROJ-123")
-- `message` (string) - The worklog comment/description
-- `timeSpent` (string) - Time spent in Jira format (e.g., "2h 30m", "1d", "45m")
-- `startedDate` (string) - When work started (format: YYYY-MM-DDTHH:mm:ss.SSS+0000)
-
-**Features:**
-- ✅ Basic Authentication with email + API token
-- ✅ Automatic Base64 encoding of credentials
-- ✅ Clean error handling (no stack traces exposed)
-- ✅ Extracts meaningful error messages from Jira API
-- ✅ Network error detection
-- ✅ Type-safe with TypeScript
-
-**Error Handling:**
-
-The service throws clean, readable errors:
-
-```typescript
-try {
-  await jiraService.addWorklog('INVALID-999', 'Test', '1h', formatWorklogDate());
-} catch (error) {
-  // Error: Failed to add worklog to issue INVALID-999.
-  // Status: 404
-  // Error: Issue does not exist or you do not have permission to see it.
-}
-```
-
-## 🎮 Controllers
-
-### Worklog Controller (`src/controllers/worklog.controller.ts`)
-
-Handles HTTP requests for worklog operations.
-
-#### `WorklogController.createWorklog()`
-
-Creates a new worklog entry for a Jira issue.
-
-**Request Body:**
-
-```json
-{
-  "issueId": "PROJ-123",      // Required: Jira issue ID
-  "message": "Fixed bug",     // Required: Worklog comment
-  "timeSpent": "2h 30m",      // Required: Time spent (Jira format)
-  "date": "2026-03-01"        // Optional: When work started (ISO date)
-}
-```
-
-**Success Response (200):**
-
-```json
-{
-  "success": true,
-  "message": "Worklog added successfully"
-}
-```
-
-**Validation Error Response (400):**
-
-```json
-{
-  "success": false,
-  "message": "Validation failed: issueId is required and must be a non-empty string"
-}
-```
-
-**Server Error Response (500):**
-
-```json
-{
-  "success": false,
-  "message": "Failed to add worklog to issue PROJ-123..."
-}
-```
-
-**Validation Rules:**
-- ✅ `issueId` - Required, non-empty string
-- ✅ `message` - Required, non-empty string
-- ✅ `timeSpent` - Required, non-empty string
-- ✅ `date` - Optional, valid date string
-
-**Features:**
-- ✅ Comprehensive input validation
-- ✅ Clean error messages (no stack traces)
-- ✅ Automatic date formatting with `formatWorklogDate()`
-- ✅ Uses `JiraService` for API calls
-- ✅ Type-safe with TypeScript
-
-## 📝 Next Steps
-
-The project structure is ready for you to add:
-- API routes in `src/routes/`
-- Controllers in `src/controllers/`
-- Business logic in `src/services/`
-- Configuration in `src/config/`
-- Utility functions in `src/utils/`
-
+The Express server logs both company and client base URLs on startup, so both instance configs should be present when using the API.

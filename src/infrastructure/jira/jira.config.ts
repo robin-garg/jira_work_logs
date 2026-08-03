@@ -69,10 +69,23 @@ function validateEmail(email: string, varName: string): void {
 }
 
 /**
- * Load and validate Jira configuration
- * This function is called immediately when the module is imported
+ * Map each Jira instance type to its environment variable prefix.
  */
-function loadSingleJiraConfig(prefix: 'PERSONAL' | 'CLIENT'): JiraConfig {
+const ENV_PREFIX: Record<JiraInstanceType, 'COMPANY' | 'CLIENT'> = {
+  company: 'COMPANY',
+  client: 'CLIENT',
+};
+
+/**
+ * Cache of resolved configs so env vars are validated only once per instance.
+ */
+const configCache: Partial<Record<JiraInstanceType, JiraConfig>> = {};
+
+/**
+ * Load and validate Jira configuration for a single instance type.
+ */
+function loadJiraConfig(type: JiraInstanceType): JiraConfig {
+  const prefix = ENV_PREFIX[type];
   const baseUrl = getRequiredEnvVar(`${prefix}_JIRA_BASE_URL`);
   const email = getRequiredEnvVar(`${prefix}_JIRA_EMAIL`);
   const apiToken = getRequiredEnvVar(`${prefix}_JIRA_API_TOKEN`);
@@ -83,16 +96,20 @@ function loadSingleJiraConfig(prefix: 'PERSONAL' | 'CLIENT'): JiraConfig {
   return { baseUrl, email, apiToken };
 }
 
-export const jiraConfigs: Record<JiraInstanceType, JiraConfig> = {
-  personal: loadSingleJiraConfig('PERSONAL'),
-  client: loadSingleJiraConfig('CLIENT'),
-};
-
+/**
+ * Lazily resolve the Jira configuration for the requested instance type.
+ * Env vars for an instance are only read when that instance is first used.
+ */
 export function getJiraConfigByType(type: JiraInstanceType): JiraConfig {
-  const config = jiraConfigs[type];
+  if (!ENV_PREFIX[type]) {
+    throw new Error(`Unsupported Jira type: ${type}`);
+  }
+
+  let config = configCache[type];
 
   if (!config) {
-    throw new Error(`Unsupported Jira type: ${type}`);
+    config = loadJiraConfig(type);
+    configCache[type] = config;
   }
 
   return config;

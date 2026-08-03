@@ -1,4 +1,4 @@
-export type JiraInstanceType = 'personal' | 'client';
+export type JiraInstanceType = 'company' | 'client';
 
 export interface JiraConfig {
   baseUrl: string;

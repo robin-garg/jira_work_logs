@@ -28,9 +28,9 @@ server.registerTool(
   'create_worklog',
   {
     title: 'Create Jira Worklog',
-    description: 'Logs time to a personal or client Jira issue.',
+    description: 'Logs time to a company or client Jira issue.',
     inputSchema: {
-      type: z.enum(['personal', 'client']).describe('Jira instance type'),
+      type: z.enum(['company', 'client']).describe('Jira instance type'),
       issueId: z.string().describe('Jira issue key, for example ABC-123'),
       message: z.string().describe('Worklog message'),
       timeSpent: z.string().describe('Time spent, for example 2h 30m'),

@@ -3,8 +3,8 @@
 import { z } from 'zod';
 
 export const createWorklogSchema = z.object({
-  type: z.enum(['personal', 'client'], {
-    message: 'type must be either "personal" or "client".',
+  type: z.enum(['company', 'client'], {
+    message: 'type must be either "company" or "client".',
   }),
 
   issueId: z
