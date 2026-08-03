@@ -30,11 +30,26 @@ This checks your Node version, installs dependencies, compiles TypeScript to `di
 
 ### 2. Configure Jira credentials
 
-Edit `.env` with your Atlassian email and [API token](https://id.atlassian.com/manage-profile/security/api-tokens).
+Edit `.env` with your Atlassian account email and an API token (not your Jira password).
+
+#### Generate an Atlassian API token
+
+1. Sign in to your Atlassian account at [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
+2. Select **Create API token** (unscoped).
+   - Prefer this over **Create API token with scopes** for this project — scoped tokens must use Atlassian’s gateway URL (`api.atlassian.com/...`), which this app does not use yet.
+3. Enter a label you’ll recognize later (for example `jira-worklog-mcp`).
+4. Choose an expiration (1–365 days; default is typically one year).
+5. Select **Create**, then **Copy** the token immediately — Atlassian will not show it again.
+6. Paste it into `.env` as `COMPANY_JIRA_API_TOKEN` and/or `CLIENT_JIRA_API_TOKEN`.
+7. Set the matching `*_JIRA_EMAIL` to the same Atlassian account email you used to create the token, and `*_JIRA_BASE_URL` to your site (for example `https://your-domain.atlassian.net`).
+
+If you use company and client Jira under different Atlassian accounts, create a separate token while signed into each account.
+
+Official docs: [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
 
 For local testing without writing to real Jira, set `USE_FAKE_JIRA=true` in `.env`. MCP, CLI, and the HTTP API will use `FakeJiraService` instead.
 
-You only need real credentials for the instance(s) you use when fake mode is off. Config is loaded lazily — missing the unused instance will not block MCP/CLI for the one you configure.
+You only need real credentials for the instance(s) you use when fake mode is off. Config is loaded lazily — missing the unused instance will not block MCP/CLI for the one you configure. Values left as `.env.example` placeholders (for example `your-client-api-token-here`) are treated as empty.
 
 ```env
 # Company Jira

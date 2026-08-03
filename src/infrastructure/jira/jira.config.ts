@@ -1,15 +1,49 @@
 import { JiraConfig, JiraInstanceType } from '../../types/worklog.types';
 
 /**
- * Validates that a required environment variable exists and is not empty
+ * Placeholder values copied from .env.example. Treat these as unset.
+ */
+const PLACEHOLDER_VALUES = new Set([
+  'https://your-company-domain.atlassian.net',
+  'your-company-email@example.com',
+  'your-company-api-token-here',
+  'https://your-client-domain.atlassian.net',
+  'your-client-email@example.com',
+  'your-client-api-token-here',
+]);
+
+function isConfiguredEnvValue(value: string | undefined): value is string {
+  if (!value) {
+    return false;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed === '') {
+    return false;
+  }
+
+  if (PLACEHOLDER_VALUES.has(trimmed)) {
+    return false;
+  }
+
+  const lower = trimmed.toLowerCase();
+  return !(
+    lower.includes('your-company-') ||
+    lower.includes('your-client-') ||
+    lower.endsWith('-api-token-here')
+  );
+}
+
+/**
+ * Validates that a required environment variable exists and is not a placeholder.
  */
 function getRequiredEnvVar(key: string): string {
   const value = process.env[key];
 
-  if (!value || value.trim() === '') {
+  if (!isConfiguredEnvValue(value)) {
     throw new Error(
       `Missing required environment variable: ${key}\n` +
-      `Please set ${key} in your .env file or environment.`,
+      `Please set ${key} in your .env file (placeholder/default values from .env.example are treated as empty).`,
     );
   }
 
