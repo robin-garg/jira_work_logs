@@ -4,14 +4,18 @@ dotenv.config();
 
 import express, { Application, Request, Response } from 'express';
 import { WorklogService } from '../../app/worklog.service';
+import { FakeJiraService, JiraService } from '../../infrastructure/jira';
 import { getJiraConfigByType, jiraConfigs } from '../../infrastructure/jira/jira.config';
-import { JiraService } from '../../infrastructure/jira/jira.service';
-import { JiraInstanceType } from '../../types/worklog.types';
+import { IJiraService, JiraInstanceType } from '../../types/worklog.types';
 import { WorklogController } from './worklog.controller';
 
 const app: Application = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const jiraServiceFactory = (type: JiraInstanceType): JiraService => {
+const jiraServiceFactory = (type: JiraInstanceType): IJiraService => {
+  if (process.env.USE_FAKE_JIRA === 'true') {
+    return new FakeJiraService();
+  }
+
   const config = getJiraConfigByType(type);
   return new JiraService(config);
 };

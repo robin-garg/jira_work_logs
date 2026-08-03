@@ -22,6 +22,22 @@ export interface CreateWorklogResult {
   timeSpentSeconds: number;
 }
 
+export interface AddWorklogParams {
+  issueId: string;
+  message: string;
+  timeSpent: string;
+  started: string;
+}
+
+export interface AddWorklogResult {
+  worklogId?: string;
+  timeSpentSeconds: number;
+}
+
+export interface IJiraService {
+  addWorklog(params: AddWorklogParams): Promise<AddWorklogResult>;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
