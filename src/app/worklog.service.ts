@@ -1,8 +1,8 @@
-import { JiraService } from '../infrastructure/jira/jira.service';
 import { formatWorklogDate } from '../utils/date.util';
 import {
   CreateWorklogInput,
   CreateWorklogResult,
+  IJiraService,
   JiraInstanceType,
 } from '../types/worklog.types';
 
@@ -15,7 +15,7 @@ export class WorklogValidationError extends Error {
 
 export class WorklogService {
   constructor(
-    private readonly jiraServiceFactory: (type: JiraInstanceType) => JiraService,
+    private readonly jiraServiceFactory: (type: JiraInstanceType) => IJiraService,
   ) {}
 
   async createWorklog(input: CreateWorklogInput): Promise<CreateWorklogResult> {

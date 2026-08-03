@@ -6,23 +6,11 @@
  */
 
 import axios, { AxiosError } from 'axios';
-import { JiraConfig } from '../../types/worklog.types';
+import { AddWorklogParams, AddWorklogResult, IJiraService, JiraConfig } from '../../types/worklog.types';
 import { parseTimeToSeconds } from '../../utils/time.util';
-
-interface AddWorklogParams {
-  issueId: string;
-  message: string;
-  timeSpent: string;
-  started: string;
-}
 
 interface JiraWorklogResponse {
   id?: string;
-}
-
-interface AddWorklogResult {
-  worklogId?: string;
-  timeSpentSeconds: number;
 }
 
 /**
@@ -30,7 +18,7 @@ interface AddWorklogResult {
  *
  * Handles all Jira API interactions including worklog management.
  */
-export class JiraService {
+export class JiraService implements IJiraService {
   constructor(private readonly config: JiraConfig) {}
 
   /**

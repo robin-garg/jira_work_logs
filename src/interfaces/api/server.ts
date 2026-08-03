@@ -4,14 +4,20 @@ dotenv.config();
 
 import express, { Application, Request, Response } from 'express';
 import { WorklogService } from '../../app/worklog.service';
+import { FakeJiraService, JiraService } from '../../infrastructure/jira';
 import { getJiraConfigByType } from '../../infrastructure/jira/jira.config';
-import { JiraService } from '../../infrastructure/jira/jira.service';
-import { JiraInstanceType } from '../../types/worklog.types';
+import { IJiraService, JiraInstanceType } from '../../types/worklog.types';
 import { WorklogController } from './worklog.controller';
 
 const app: Application = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const jiraServiceFactory = (type: JiraInstanceType): JiraService => {
+const useFakeJira = process.env.USE_FAKE_JIRA === 'true';
+
+const jiraServiceFactory = (type: JiraInstanceType): IJiraService => {
+  if (useFakeJira) {
+    return new FakeJiraService();
+  }
+
   const config = getJiraConfigByType(type);
   return new JiraService(config);
 };
@@ -37,8 +43,13 @@ app.post('/worklog', async (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Health check available at http://localhost:${PORT}/health`);
-  console.log(`Company Jira configured for: ${getJiraConfigByType('company').baseUrl}`);
-  console.log(`Client Jira configured for: ${getJiraConfigByType('client').baseUrl}`);
+
+  if (useFakeJira) {
+    console.log('Using FakeJiraService (USE_FAKE_JIRA=true)');
+  } else {
+    console.log(`Company Jira configured for: ${getJiraConfigByType('company').baseUrl}`);
+    console.log(`Client Jira configured for: ${getJiraConfigByType('client').baseUrl}`);
+  }
 });
 
 export default app;

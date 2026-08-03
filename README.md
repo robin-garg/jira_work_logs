@@ -32,7 +32,9 @@ This checks your Node version, installs dependencies, compiles TypeScript to `di
 
 Edit `.env` with your Atlassian email and [API token](https://id.atlassian.com/manage-profile/security/api-tokens).
 
-You only need credentials for the instance(s) you use. Config is loaded lazily — missing the unused instance will not block MCP/CLI for the one you configure.
+For local testing without writing to real Jira, set `USE_FAKE_JIRA=true` in `.env`. MCP, CLI, and the HTTP API will use `FakeJiraService` instead.
+
+You only need real credentials for the instance(s) you use when fake mode is off. Config is loaded lazily — missing the unused instance will not block MCP/CLI for the one you configure.
 
 ```env
 # Company Jira
@@ -91,6 +93,7 @@ npm run cli -- --type company --issueId PROJ-123 --message "Test worklog" --time
 | `CLIENT_JIRA_EMAIL` | Client Atlassian account email | When using `type: client` |
 | `CLIENT_JIRA_API_TOKEN` | Client Jira API token | When using `type: client` |
 | `PORT` | Express server port | Optional (default `3000`) |
+| `USE_FAKE_JIRA` | Use `FakeJiraService` instead of real Jira | Optional (`true` / `false`) |
 
 Base URLs must be `http://` or `https://`. Emails must be valid Atlassian account emails. Invalid or missing values for the instance you request produce a clear error when that instance is first used.
 
