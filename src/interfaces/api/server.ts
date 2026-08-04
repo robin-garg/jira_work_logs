@@ -3,10 +3,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Application, Request, Response } from 'express';
+import { IssueService } from '../../app/issue.service';
 import { WorklogService } from '../../app/worklog.service';
 import { FakeJiraService, JiraService } from '../../infrastructure/jira';
 import { getJiraConfigByType } from '../../infrastructure/jira/jira.config';
 import { IJiraService, JiraInstanceType } from '../../types/worklog.types';
+import { IssueController } from './issue.controller';
 import { WorklogController } from './worklog.controller';
 
 const app: Application = express();
@@ -24,6 +26,8 @@ const jiraServiceFactory = (type: JiraInstanceType): IJiraService => {
 
 const worklogService = new WorklogService(jiraServiceFactory);
 const worklogController = new WorklogController(worklogService);
+const issueService = new IssueService(jiraServiceFactory);
+const issueController = new IssueController(issueService);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,6 +42,10 @@ app.get('/health', (_req: Request, res: Response) => {
 
 app.post('/worklog', async (req: Request, res: Response) => {
   await worklogController.createWorklog(req, res);
+});
+
+app.post('/issue', async (req: Request, res: Response) => {
+  await issueController.createIssue(req, res);
 });
 
 app.listen(PORT, () => {

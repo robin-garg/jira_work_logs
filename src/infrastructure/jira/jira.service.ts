@@ -6,11 +6,28 @@
  */
 
 import axios, { AxiosError } from 'axios';
-import { AddWorklogParams, AddWorklogResult, IJiraService, JiraConfig } from '../../types/worklog.types';
+import {
+  AddWorklogParams,
+  AddWorklogResult,
+  CreateIssueApiResult,
+  CreateIssueParams,
+  IJiraService,
+  JiraConfig,
+} from '../../types/worklog.types';
 import { parseTimeToSeconds } from '../../utils/time.util';
 
 interface JiraWorklogResponse {
   id?: string;
+}
+
+interface JiraCreateIssueResponse {
+  id: string;
+  key: string;
+  self?: string;
+}
+
+interface JiraMyselfResponse {
+  accountId: string;
 }
 
 /**
@@ -91,11 +108,7 @@ export class JiraService implements IJiraService {
 
     try {
       const response = await axios.post<JiraWorklogResponse>(url, requestBody, {
-        headers: {
-          Authorization: this.buildAuthHeader(),
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: this.getRequestHeaders(),
       });
 
       return {
@@ -104,24 +117,125 @@ export class JiraService implements IJiraService {
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(this.buildJiraErrorMessage(error, params.issueId));
+        throw new Error(this.buildJiraErrorMessage(error, `add worklog to issue ${params.issueId}`));
       }
 
       throw new Error(`Failed to add worklog to issue ${params.issueId}: ${(error as Error).message}`);
     }
   }
 
-  private buildJiraErrorMessage(error: AxiosError, issueId: string): string {
+  /**
+   * Creates a new Jira issue
+   *
+   * @param params - Project key, summary, issue type, and optional fields
+   * @throws Error if the API request fails with a clean, readable message
+   *
+   * @example
+   * await jiraService.createIssue({
+   *   projectKey: 'PROJ',
+   *   summary: 'Fix login redirect',
+   *   issueType: 'Task',
+   *   description: 'Users are redirected to the wrong page after login.',
+   * });
+   */
+  private getRequestHeaders(): Record<string, string> {
+    return {
+      Authorization: this.buildAuthHeader(),
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+  }
+
+  /**
+   * Resolves the accountId of the authenticated Jira user.
+   */
+  private async getCurrentUserAccountId(): Promise<string> {
+    const url = `${this.config.baseUrl}/rest/api/3/myself`;
+
+    try {
+      const response = await axios.get<JiraMyselfResponse>(url, {
+        headers: this.getRequestHeaders(),
+      });
+
+      if (!response.data?.accountId) {
+        throw new Error('Jira /myself response did not include an accountId.');
+      }
+
+      return response.data.accountId;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(this.buildJiraErrorMessage(error, 'resolve current Jira user'));
+      }
+
+      throw new Error(`Failed to resolve current Jira user: ${(error as Error).message}`);
+    }
+  }
+
+  async createIssue(params: CreateIssueParams): Promise<CreateIssueApiResult> {
+    const url = `${this.config.baseUrl}/rest/api/3/issue`;
+
+    const fields: Record<string, unknown> = {
+      project: { key: params.projectKey },
+      summary: params.summary,
+      issuetype: { name: params.issueType },
+    };
+
+    if (params.description) {
+      fields.description = this.convertToADF(params.description);
+    }
+
+    if (params.labels && params.labels.length > 0) {
+      fields.labels = params.labels;
+    }
+
+    if (params.priority) {
+      fields.priority = { name: params.priority };
+    }
+
+    if (params.assignToMe) {
+      const accountId = await this.getCurrentUserAccountId();
+      fields.assignee = { accountId };
+    }
+
+    try {
+      const response = await axios.post<JiraCreateIssueResponse>(
+        url,
+        { fields },
+        {
+          headers: this.getRequestHeaders(),
+        },
+      );
+
+      return {
+        id: response.data.id,
+        key: response.data.key,
+        self: response.data.self,
+        assignedToMe: Boolean(params.assignToMe),
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          this.buildJiraErrorMessage(error, `create issue in project ${params.projectKey}`),
+        );
+      }
+
+      throw new Error(
+        `Failed to create issue in project ${params.projectKey}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  private buildJiraErrorMessage(error: AxiosError, action: string): string {
     if (error.response) {
       const jiraMessage = this.extractJiraErrorMessage(error.response.data);
-      return `Failed to add worklog to issue ${issueId}: ${jiraMessage}`;
+      return `Failed to ${action}: ${jiraMessage}`;
     }
 
     if (error.request) {
-      return `Failed to add worklog to issue ${issueId}: Jira did not respond. Check the Jira URL and network connectivity.`;
+      return `Failed to ${action}: Jira did not respond. Check the Jira URL and network connectivity.`;
     }
 
-    return `Failed to add worklog to issue ${issueId}: ${error.message}`;
+    return `Failed to ${action}: ${error.message}`;
   }
 
   private extractJiraErrorMessage(data: unknown): string {

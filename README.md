@@ -78,12 +78,22 @@ Add the block printed by `npm run setup` to your MCP client config (for example 
 }
 ```
 
-Use the absolute path to this repo’s built MCP entry. Restart the MCP client, then call the `create_worklog` tool with `type` (`company` or `client`), `issueId`, `message`, `timeSpent`, and optional `date`.
+Use the absolute path to this repo’s built MCP entry. Restart the MCP client, then use either tool:
+
+- `create_worklog` — `type` (`company` or `client`), `issueId`, `message`, `timeSpent`, and optional `date`
+- `create_issue` — `type`, `projectKey`, `summary`, `issueType`, and optional `description`, `labels`, `priority`, `assignToMe`
 
 **Optional check via CLI** (same core logic as MCP):
 
 ```bash
+# Log time to an existing issue
 npm run cli -- --type company --issueId PROJ-123 --message "Test worklog" --timeSpent "1m"
+
+# Create a new issue
+npm run cli -- create-issue --type company --projectKey PROJ --summary "Fix login redirect" --issueType Task --description "Users land on the wrong page after login"
+
+# Create a new issue and assign it to yourself
+npm run cli -- create-issue --type company --projectKey PROJ --summary "Fix login redirect" --issueType Task --assignToMe
 ```
 
 ## Available Scripts
@@ -121,6 +131,7 @@ npm run dev
 ```
 
 - `GET /health` — health check
-- `POST /worklog` — same payload as the MCP tool (`type`, `issueId`, `message`, `timeSpent`, optional `date`)
+- `POST /worklog` — same payload as the MCP `create_worklog` tool (`type`, `issueId`, `message`, `timeSpent`, optional `date`)
+- `POST /issue` — same payload as the MCP `create_issue` tool (`type`, `projectKey`, `summary`, `issueType`, optional `description`, `labels`, `priority`, `assignToMe`)
 
 The Express server logs both company and client base URLs on startup, so both instance configs should be present when using the API.

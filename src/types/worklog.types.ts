@@ -34,8 +34,46 @@ export interface AddWorklogResult {
   timeSpentSeconds: number;
 }
 
+export interface CreateIssueInput {
+  type: JiraInstanceType;
+  projectKey: string;
+  summary: string;
+  issueType: string;
+  description?: string;
+  labels?: string[];
+  priority?: string;
+  /** When true, assign the issue to the authenticated Jira user. */
+  assignToMe?: boolean;
+}
+
+export interface CreateIssueResult {
+  issueId: string;
+  issueKey: string;
+  jiraType: JiraInstanceType;
+  self?: string;
+  assignedToMe?: boolean;
+}
+
+export interface CreateIssueParams {
+  projectKey: string;
+  summary: string;
+  issueType: string;
+  description?: string;
+  labels?: string[];
+  priority?: string;
+  assignToMe?: boolean;
+}
+
+export interface CreateIssueApiResult {
+  id: string;
+  key: string;
+  self?: string;
+  assignedToMe?: boolean;
+}
+
 export interface IJiraService {
   addWorklog(params: AddWorklogParams): Promise<AddWorklogResult>;
+  createIssue(params: CreateIssueParams): Promise<CreateIssueApiResult>;
 }
 
 export interface ApiResponse<T> {
