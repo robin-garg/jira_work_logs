@@ -59,9 +59,19 @@ CLIENT_JIRA_API_TOKEN=your-client-api-token-here
 
 For local testing without writing to real Jira, set `USE_FAKE_JIRA=true`. You only need real credentials for the instance(s) you use when fake mode is off. Values left as `.env.example` placeholders are treated as empty.
 
-## Register the MCP server
+## Connect your AI client
 
-Add the block printed by `npm run setup` to your MCP client config (Cursor MCP settings or Claude Desktop `claude_desktop_config.json`):
+After `npm run setup` and configuring `.env`, register the MCP server in your AI tool. Each guide covers config file format, UI steps (if any), and terminal/CLI commands (if any):
+
+| Client | Guide |
+|--------|-------|
+| Cursor | [docs/mcp-clients/cursor.md](docs/mcp-clients/cursor.md) |
+| GitHub Copilot (VS Code) | [docs/mcp-clients/github-copilot.md](docs/mcp-clients/github-copilot.md) |
+| Codex | [docs/mcp-clients/codex.md](docs/mcp-clients/codex.md) |
+| Claude Code / Claude Desktop | [docs/mcp-clients/anthropic.md](docs/mcp-clients/anthropic.md) |
+| Hermes Agent | [docs/mcp-clients/hermes.md](docs/mcp-clients/hermes.md) |
+
+Generic stdio shape (many clients use `mcpServers`; VS Code Copilot uses `servers` instead — see its guide):
 
 ```json
 {
@@ -74,7 +84,7 @@ Add the block printed by `npm run setup` to your MCP client config (Cursor MCP s
 }
 ```
 
-Use the absolute path to this repo’s built MCP entry. Restart the MCP client after saving.
+`npm run setup` prints an absolute-path block for the built entry under `dist/interfaces/mcp/server.js`. Restart or reload the client after saving.
 
 ## MCP tools
 
