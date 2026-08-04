@@ -14,12 +14,15 @@ VS Code uses a **different** top-level key than Cursor: `servers`, not `mcpServe
 
 | Scope | Path |
 |-------|------|
-| Workspace | `.vscode/mcp.json` |
-| User | Open via Command Palette: **MCP: Open User Configuration** |
+| Workspace | `.vscode/mcp.json` (same on macOS and Windows) |
+| User (macOS) | `~/Library/Application Support/Code/User/mcp.json` (or open via Command Palette) |
+| User (Windows) | `%APPDATA%\Code\User\mcp.json` (or open via Command Palette) |
+
+Prefer **MCP: Open User Configuration** / **MCP: Open Workspace Folder Configuration** so VS Code opens the correct file for your OS.
 
 ### Workspace example
 
-Create `.vscode/mcp.json`:
+Create `.vscode/mcp.json` (works on macOS and Windows):
 
 ```json
 {
@@ -36,21 +39,49 @@ Create `.vscode/mcp.json`:
 
 ### Absolute-path example
 
+#### macOS
+
 ```json
 {
   "servers": {
     "jira-worklog": {
       "type": "stdio",
       "command": "node",
-      "args": ["/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+      "args": ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
     }
   }
 }
 ```
 
+#### Windows
+
+```json
+{
+  "servers": {
+    "jira-worklog": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
+    }
+  }
+}
+```
+
+Use doubled backslashes (`\\`) in JSON, or forward slashes (`C:/Users/...`).
+
 ## UI / Command Palette
 
-1. Open the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`).
+### macOS
+
+1. Open the Command Palette (`Cmd+Shift+P`).
+2. Run **MCP: Add Server** and choose Workspace or User, **or** open **MCP: Open Workspace Folder Configuration** and paste the JSON above.
+3. Use **MCP: List Servers** to see status.
+4. In the `mcp.json` editor, use the inline **Start** control if shown.
+5. In Copilot Chat, switch to **Agent** mode so MCP tools can be used.
+
+### Windows
+
+1. Open the Command Palette (`Ctrl+Shift+P`).
 2. Run **MCP: Add Server** and choose Workspace or User, **or** open **MCP: Open Workspace Folder Configuration** and paste the JSON above.
 3. Use **MCP: List Servers** to see status.
 4. In the `mcp.json` editor, use the inline **Start** control if shown.

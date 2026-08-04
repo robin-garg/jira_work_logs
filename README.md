@@ -71,20 +71,35 @@ After `npm run setup` and configuring `.env`, register the MCP server in your AI
 | Claude Code / Claude Desktop | [docs/mcp-clients/anthropic.md](docs/mcp-clients/anthropic.md) |
 | Hermes Agent | [docs/mcp-clients/hermes.md](docs/mcp-clients/hermes.md) |
 
-Generic stdio shape (many clients use `mcpServers`; VS Code Copilot uses `servers` instead — see its guide):
+Generic stdio shape (many clients use `mcpServers`; VS Code Copilot uses `servers` instead — see its guide). Use an absolute path for your OS:
+
+**macOS**
 
 ```json
 {
   "mcpServers": {
     "jira-worklog": {
       "command": "node",
-      "args": ["/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+      "args": ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
     }
   }
 }
 ```
 
-`npm run setup` prints an absolute-path block for the built entry under `dist/interfaces/mcp/server.js`. Restart or reload the client after saving.
+**Windows**
+
+```json
+{
+  "mcpServers": {
+    "jira-worklog": {
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
+    }
+  }
+}
+```
+
+`npm run setup` prints an absolute-path block for the built entry under `dist/interfaces/mcp/server.js` on the machine where you run it. Restart or reload the client after saving. Per-client paths and shortcuts for macOS and Windows are in each guide above.
 
 ## MCP tools
 

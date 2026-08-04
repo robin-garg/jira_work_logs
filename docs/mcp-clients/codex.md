@@ -14,24 +14,29 @@ Codex uses **TOML**, not JSON.
 
 | Scope | Path |
 |-------|------|
-| Global | `~/.codex/config.toml` |
-| Project | `.codex/config.toml` (trusted projects only) |
+| Global (macOS) | `~/.codex/config.toml` |
+| Global (Windows) | `%USERPROFILE%\.codex\config.toml` |
+| Project | `.codex/config.toml` (trusted projects only; same relative path on both OSes) |
 
 Section name must be `mcp_servers` (underscore).
 
+### macOS
+
 ```toml
 [mcp_servers.jira-worklog]
 command = "node"
-args = ["/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+args = ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+cwd = "/Users/YOUR_USER/path/to/jira_work_logs"
+enabled = true
 ```
 
-Optional:
+### Windows
 
 ```toml
 [mcp_servers.jira-worklog]
 command = "node"
-args = ["/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
-cwd = "/absolute/path/to/jira_work_logs"
+args = ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
+cwd = "C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs"
 enabled = true
 ```
 
@@ -39,8 +44,10 @@ Setting `cwd` to the repo root helps `dotenv` load `.env`.
 
 ## Terminal (preferred)
 
+### macOS / Linux (bash/zsh)
+
 ```bash
-codex mcp add jira-worklog -- node /absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js
+codex mcp add jira-worklog -- node /Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js
 codex mcp list
 codex mcp get jira-worklog
 ```
@@ -51,7 +58,21 @@ To remove:
 codex mcp remove jira-worklog
 ```
 
-You can still edit `~/.codex/config.toml` by hand for `cwd`, timeouts, or tool filters.
+### Windows (PowerShell)
+
+```powershell
+codex mcp add jira-worklog -- node C:\Users\YOUR_USER\path\to\jira_work_logs\dist\interfaces\mcp\server.js
+codex mcp list
+codex mcp get jira-worklog
+```
+
+To remove:
+
+```powershell
+codex mcp remove jira-worklog
+```
+
+You can still edit the global `config.toml` by hand for `cwd`, timeouts, or tool filters.
 
 ## UI
 

@@ -12,36 +12,52 @@ Hermes stores MCP config in **YAML** under `mcp_servers`.
 
 ## Config file
 
-| Scope | Path |
-|-------|------|
-| Global | `~/.hermes/config.yaml` (or `$HERMES_HOME/config.yaml`) |
+| Scope | macOS | Windows |
+|-------|-------|---------|
+| Global | `~/.hermes/config.yaml` | `%USERPROFILE%\.hermes\config.yaml` |
+| Override | `$HERMES_HOME/config.yaml` | `%HERMES_HOME%\config.yaml` |
+
+### macOS
 
 ```yaml
 mcp_servers:
   jira-worklog:
     command: "node"
     args:
-      - "/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"
-```
-
-Optional env / timeouts:
-
-```yaml
-mcp_servers:
-  jira-worklog:
-    command: "node"
-    args:
-      - "/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"
-    env: {}
+      - "/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"
     enabled: true
     timeout: 120
     connect_timeout: 60
 ```
 
+### Windows
+
+```yaml
+mcp_servers:
+  jira-worklog:
+    command: "node"
+    args:
+      - "C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"
+    enabled: true
+    timeout: 120
+    connect_timeout: 60
+```
+
+You can also use forward slashes in YAML on Windows (`C:/Users/...`).
+
 ## Terminal (preferred)
 
+### macOS / Linux (bash/zsh)
+
 ```bash
-hermes mcp add jira-worklog -- node /absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js
+hermes mcp add jira-worklog -- node /Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js
+hermes mcp catalog
+```
+
+### Windows (PowerShell)
+
+```powershell
+hermes mcp add jira-worklog -- node C:\Users\YOUR_USER\path\to\jira_work_logs\dist\interfaces\mcp\server.js
 hermes mcp catalog
 ```
 
