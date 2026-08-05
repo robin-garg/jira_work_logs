@@ -124,8 +124,10 @@ function printMcpConfig(envWasCreated) {
   console.log(
     `\n${COLORS.bold}Next steps:${COLORS.reset}\n` +
     `  1. ${envWasCreated ? 'Edit' : 'Verify'} ${ENV_FILE} with your Jira credentials.\n` +
-    `  2. Paste the JSON above into your MCP client config.\n` +
-    `  3. Restart the MCP client.\n`,
+    `  2. Wire AI clients (recommended):\n` +
+    `       npm run configure-clients\n` +
+    `     Or configure manually — see docs/mcp-clients/.\n` +
+    `  3. Restart / reload each MCP client.\n`,
   );
 }
 

@@ -59,22 +59,66 @@ CLIENT_JIRA_API_TOKEN=your-client-api-token-here
 
 For local testing without writing to real Jira, set `USE_FAKE_JIRA=true`. You only need real credentials for the instance(s) you use when fake mode is off. Values left as `.env.example` placeholders are treated as empty.
 
-## Register the MCP server
+## Connect your AI client
 
-Add the block printed by `npm run setup` to your MCP client config (Cursor MCP settings or Claude Desktop `claude_desktop_config.json`):
+Use **global** MCP config (home-directory files), not project-local configs. After `npm run setup` and configuring `.env`:
+
+```bash
+npm run configure-clients
+```
+
+Detects installed clients and wires a global `jira-worklog` entry (Cursor, VS Code Copilot, Copilot CLI, Claude Code, Claude Desktop, Codex, Hermes).
+
+```bash
+npm run configure-clients -- --dry-run
+npm run configure-clients -- --force
+npm run configure-clients -- --cursor
+npm run configure-clients -- --copilot-cli
+```
+
+Default scope is **global**. Codex CLI and ChatGPT desktop share one Codex config. Copilot in VS Code and Copilot CLI need separate entries (`--vscode` and `--copilot-cli`).
+
+Manual paths (macOS / Windows) and verify steps:
+
+| Client | Guide |
+|--------|-------|
+| Cursor (IDE + Agent CLI) | [docs/mcp-clients/cursor.md](docs/mcp-clients/cursor.md) |
+| GitHub Copilot (VS Code + CLI) | [docs/mcp-clients/github-copilot.md](docs/mcp-clients/github-copilot.md) |
+| Codex / ChatGPT desktop | [docs/mcp-clients/codex.md](docs/mcp-clients/codex.md) |
+| Claude Code / Claude Desktop | [docs/mcp-clients/anthropic.md](docs/mcp-clients/anthropic.md) |
+| Hermes Agent | [docs/mcp-clients/hermes.md](docs/mcp-clients/hermes.md) |
+
+Generic global stdio shape (VS Code uses `servers` instead — see its guide):
+
+**macOS**
 
 ```json
 {
   "mcpServers": {
     "jira-worklog": {
       "command": "node",
-      "args": ["/absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+      "args": ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
     }
   }
 }
 ```
 
-Use the absolute path to this repo’s built MCP entry. Restart the MCP client after saving.
+**Windows**
+
+```json
+{
+  "mcpServers": {
+    "jira-worklog": {
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
+    }
+  }
+}
+```
+
+Reload each client after configuring. The MCP server loads `.env` from this repo root automatically.
+
+macOS clients were validated with global config. Repeat the same `npm run setup` → `npm run configure-clients` flow on Windows when testing there.
 
 ## MCP tools
 
@@ -88,6 +132,7 @@ Use the absolute path to this repo’s built MCP entry. Restart the MCP client a
 | Script | Purpose |
 |--------|---------|
 | `npm run setup` | First-time install, build, `.env` scaffold, print MCP config |
+| `npm run configure-clients` | Auto-wire global MCP config into detected AI clients |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm run mcp` | Run the MCP server over stdio via `ts-node` (dev) |
 

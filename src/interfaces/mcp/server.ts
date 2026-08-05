@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
+import path from 'path';
 import dotenv from 'dotenv';
-dotenv.config();
+
+// Load .env from the repo root so global MCP configs work regardless of cwd.
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
