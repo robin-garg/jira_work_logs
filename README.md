@@ -24,6 +24,41 @@ This will:
 4. Create `.env` from `.env.example` if it does not already exist
 5. Print a ready-to-paste MCP client config block
 
+## Clean / reinstall from scratch
+
+To wipe install and build artifacts and run setup again:
+
+```bash
+npm run setup:clean
+```
+
+Or clean only (keeps `.env`):
+
+```bash
+npm run clean
+npm run setup
+```
+
+`npm run clean` removes `node_modules/`, `dist/`, and `package-lock.json`. Your `.env` is kept by default.
+
+To delete an old `.env` and regenerate a blank one from `.env.example`:
+
+```bash
+npm run reset-env
+```
+
+To clean everything including `.env`, then run setup:
+
+```bash
+npm run setup:clean:env
+```
+
+Or during a normal clean:
+
+```bash
+npm run clean -- --with-env
+```
+
 ## Configure Jira credentials
 
 Edit `.env` with your Atlassian account email and an API token (not your Jira password).

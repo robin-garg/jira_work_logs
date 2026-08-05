@@ -4,7 +4,8 @@ import path from 'path';
 import dotenv from 'dotenv';
 
 // Load .env from the repo root so global MCP configs work regardless of cwd.
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+// quiet: true — dotenv v17 logs to stdout by default, which breaks MCP stdio framing
+dotenv.config({ path: path.resolve(__dirname, '../../../.env'), quiet: true });
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';

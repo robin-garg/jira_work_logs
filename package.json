@@ -5,6 +5,10 @@
   "main": "dist/interfaces/api/server.js",
   "scripts": {
     "setup": "node scripts/install.js",
+    "clean": "node scripts/clean.js",
+    "reset-env": "node scripts/clean.js --env-only",
+    "setup:clean": "node scripts/clean.js --setup",
+    "setup:clean:env": "node scripts/clean.js --with-env --setup",
     "configure-clients": "node scripts/configure-clients.js",
     "dev": "ts-node-dev --respawn src/interfaces/api/server.ts",
     "build": "tsc",
