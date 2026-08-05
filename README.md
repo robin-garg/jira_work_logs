@@ -153,7 +153,7 @@ Generic global stdio shape (VS Code uses `servers` instead — see its guide):
 
 Reload each client after configuring. The MCP server loads `.env` from this repo root automatically.
 
-macOS clients were validated with global config. Repeat the same `npm run setup` → `npm run configure-clients` flow on Windows when testing there.
+Global MCP config has been validated on **macOS** and **Windows** (`npm run setup` → `npm run configure-clients` → verify each client).
 
 ## MCP tools
 
