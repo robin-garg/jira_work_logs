@@ -61,17 +61,34 @@ For local testing without writing to real Jira, set `USE_FAKE_JIRA=true`. You on
 
 ## Connect your AI client
 
-After `npm run setup` and configuring `.env`, register the MCP server in your AI tool. Each guide covers config file format, UI steps (if any), and terminal/CLI commands (if any):
+Use **global** MCP config (home-directory files), not project-local configs. After `npm run setup` and configuring `.env`:
+
+```bash
+npm run configure-clients
+```
+
+Detects installed clients and wires a global `jira-worklog` entry (Cursor, VS Code Copilot, Copilot CLI, Claude Code, Claude Desktop, Codex, Hermes).
+
+```bash
+npm run configure-clients -- --dry-run
+npm run configure-clients -- --force
+npm run configure-clients -- --cursor
+npm run configure-clients -- --copilot-cli
+```
+
+Default scope is **global**. Codex CLI and ChatGPT desktop share one Codex config. Copilot in VS Code and Copilot CLI need separate entries (`--vscode` and `--copilot-cli`).
+
+Manual paths (macOS / Windows) and verify steps:
 
 | Client | Guide |
 |--------|-------|
-| Cursor | [docs/mcp-clients/cursor.md](docs/mcp-clients/cursor.md) |
-| GitHub Copilot (VS Code) | [docs/mcp-clients/github-copilot.md](docs/mcp-clients/github-copilot.md) |
-| Codex | [docs/mcp-clients/codex.md](docs/mcp-clients/codex.md) |
+| Cursor (IDE + Agent CLI) | [docs/mcp-clients/cursor.md](docs/mcp-clients/cursor.md) |
+| GitHub Copilot (VS Code + CLI) | [docs/mcp-clients/github-copilot.md](docs/mcp-clients/github-copilot.md) |
+| Codex / ChatGPT desktop | [docs/mcp-clients/codex.md](docs/mcp-clients/codex.md) |
 | Claude Code / Claude Desktop | [docs/mcp-clients/anthropic.md](docs/mcp-clients/anthropic.md) |
 | Hermes Agent | [docs/mcp-clients/hermes.md](docs/mcp-clients/hermes.md) |
 
-Generic stdio shape (many clients use `mcpServers`; VS Code Copilot uses `servers` instead — see its guide). Use an absolute path for your OS:
+Generic global stdio shape (VS Code uses `servers` instead — see its guide):
 
 **macOS**
 
@@ -99,7 +116,9 @@ Generic stdio shape (many clients use `mcpServers`; VS Code Copilot uses `server
 }
 ```
 
-`npm run setup` prints an absolute-path block for the built entry under `dist/interfaces/mcp/server.js` on the machine where you run it. Restart or reload the client after saving. Per-client paths and shortcuts for macOS and Windows are in each guide above.
+Reload each client after configuring. The MCP server loads `.env` from this repo root automatically.
+
+macOS clients were validated with global config. Repeat the same `npm run setup` → `npm run configure-clients` flow on Windows when testing there.
 
 ## MCP tools
 
@@ -113,6 +132,7 @@ Generic stdio shape (many clients use `mcpServers`; VS Code Copilot uses `server
 | Script | Purpose |
 |--------|---------|
 | `npm run setup` | First-time install, build, `.env` scaffold, print MCP config |
+| `npm run configure-clients` | Auto-wire global MCP config into detected AI clients |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm run mcp` | Run the MCP server over stdio via `ts-node` (dev) |
 

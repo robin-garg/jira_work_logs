@@ -5,6 +5,7 @@
   "main": "dist/interfaces/api/server.js",
   "scripts": {
     "setup": "node scripts/install.js",
+    "configure-clients": "node scripts/configure-clients.js",
     "dev": "ts-node-dev --respawn src/interfaces/api/server.ts",
     "build": "tsc",
     "start": "node dist/interfaces/api/server.js",

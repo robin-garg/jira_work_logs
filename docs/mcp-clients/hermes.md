@@ -1,23 +1,33 @@
 # Hermes Agent
 
-Connect this repo’s MCP server to [Hermes Agent](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp).
-
-Hermes stores MCP config in **YAML** under `mcp_servers`.
+Connect this repo’s MCP server to [Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp) using **global** YAML config.
 
 ## Prerequisites
 
-1. Complete [Quick start](../../README.md#quick-start-after-cloning) (`npm run setup`) so `dist/interfaces/mcp/server.js` exists.
-2. Configure [Jira credentials](../../README.md#configure-jira-credentials) in `.env`.
-3. Hermes installed (`hermes` on your `PATH`).
+1. `npm run setup`
+2. Configure [Jira credentials](../../README.md#configure-jira-credentials) in `.env`
+3. `hermes` on your `PATH`
 
-## Config file
+## Configure (global)
 
-| Scope | macOS | Windows |
-|-------|-------|---------|
-| Global | `~/.hermes/config.yaml` | `%USERPROFILE%\.hermes\config.yaml` |
-| Override | `$HERMES_HOME/config.yaml` | `%HERMES_HOME%\config.yaml` |
+```bash
+npm run configure-clients -- --hermes
+```
 
-### macOS
+| OS | Global path |
+|----|-------------|
+| macOS | `~/.hermes/config.yaml` |
+| Windows | `%USERPROFILE%\.hermes\config.yaml` |
+
+Override with `$HERMES_HOME` / `%HERMES_HOME%` if set.
+
+### Manual / CLI
+
+**macOS**
+
+```bash
+hermes mcp add jira-worklog -- node /Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js
+```
 
 ```yaml
 mcp_servers:
@@ -26,11 +36,13 @@ mcp_servers:
     args:
       - "/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"
     enabled: true
-    timeout: 120
-    connect_timeout: 60
 ```
 
-### Windows
+**Windows (PowerShell)**
+
+```powershell
+hermes mcp add jira-worklog -- node C:\Users\YOUR_USER\path\to\jira_work_logs\dist\interfaces\mcp\server.js
+```
 
 ```yaml
 mcp_servers:
@@ -39,50 +51,16 @@ mcp_servers:
     args:
       - "C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"
     enabled: true
-    timeout: 120
-    connect_timeout: 60
 ```
 
-You can also use forward slashes in YAML on Windows (`C:/Users/...`).
-
-## Terminal (preferred)
-
-### macOS / Linux (bash/zsh)
-
-```bash
-hermes mcp add jira-worklog -- node /Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js
-hermes mcp catalog
-```
-
-### Windows (PowerShell)
-
-```powershell
-hermes mcp add jira-worklog -- node C:\Users\YOUR_USER\path\to\jira_work_logs\dist\interfaces\mcp\server.js
-hermes mcp catalog
-```
-
-After editing config from a running session:
-
-```text
-/reload-mcp
-```
-
-Or restart Hermes.
-
-Other useful commands: `hermes mcp configure <name>`, `hermes mcp` (interactive picker).
-
-## UI / session
-
-There is no separate Desktop MCP settings UI for Hermes. Use the CLI, edit `config.yaml`, then `/reload-mcp` in the session.
+After editing a running session: `/reload-mcp`
 
 ## Verify
 
 | Check | Expected |
 |-------|----------|
-| Config / `hermes mcp` listing | `jira-worklog` present |
-| Tools callable in a session | `create_worklog`, `create_issue` |
-
-Use `USE_FAKE_JIRA=true` for a safe smoke test.
+| Hermes MCP listing | `jira-worklog` present |
+| Tools | `create_worklog`, `create_issue` |
 
 ## Official docs
 

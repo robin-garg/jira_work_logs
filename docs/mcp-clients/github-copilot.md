@@ -1,28 +1,33 @@
-# GitHub Copilot (VS Code)
+# GitHub Copilot (VS Code and CLI)
 
-Connect this repo’s MCP server to GitHub Copilot in [Visual Studio Code](https://code.visualstudio.com/).
-
-VS Code uses a **different** top-level key than Cursor: `servers`, not `mcpServers`.
+VS Code Copilot and Copilot CLI use **different** config files. Configure each product you use. Both should be **global**.
 
 ## Prerequisites
 
-1. Complete [Quick start](../../README.md#quick-start-after-cloning) (`npm run setup`) so `dist/interfaces/mcp/server.js` exists.
-2. Configure [Jira credentials](../../README.md#configure-jira-credentials) in `.env`.
-3. VS Code with Copilot / Agent mode that supports MCP (see [GitHub docs](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp)).
+1. `npm run setup`
+2. Configure [Jira credentials](../../README.md#configure-jira-credentials) in `.env`
 
-## Config file
+## Configure (global)
 
-| Scope | Path |
-|-------|------|
-| Workspace | `.vscode/mcp.json` (same on macOS and Windows) |
-| User (macOS) | `~/Library/Application Support/Code/User/mcp.json` (or open via Command Palette) |
-| User (Windows) | `%APPDATA%\Code\User\mcp.json` (or open via Command Palette) |
+```bash
+npm run configure-clients -- --vscode
+npm run configure-clients -- --copilot-cli
+```
 
-Prefer **MCP: Open User Configuration** / **MCP: Open Workspace Folder Configuration** so VS Code opens the correct file for your OS.
+---
 
-### Workspace example
+## VS Code (Copilot Agent)
 
-Create `.vscode/mcp.json` (works on macOS and Windows):
+Uses top-level key `servers` (not `mcpServers`).
+
+| OS | Global (user) path |
+|----|--------------------|
+| macOS | `~/Library/Application Support/Code/User/mcp.json` |
+| Windows | `%APPDATA%\Code\User\mcp.json` |
+
+Open via Command Palette → **MCP: Open User Configuration**.
+
+**macOS**
 
 ```json
 {
@@ -30,16 +35,14 @@ Create `.vscode/mcp.json` (works on macOS and Windows):
     "jira-worklog": {
       "type": "stdio",
       "command": "node",
-      "args": ["${workspaceFolder}/dist/interfaces/mcp/server.js"],
-      "envFile": "${workspaceFolder}/.env"
+      "args": ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"],
+      "envFile": "/Users/YOUR_USER/path/to/jira_work_logs/.env"
     }
   }
 }
 ```
 
-### Absolute-path example
-
-#### macOS
+**Windows**
 
 ```json
 {
@@ -47,59 +50,63 @@ Create `.vscode/mcp.json` (works on macOS and Windows):
     "jira-worklog": {
       "type": "stdio",
       "command": "node",
-      "args": ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+      "args": ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"],
+      "envFile": "C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\.env"
     }
   }
 }
 ```
 
-#### Windows
+**Verify:** Command Palette → **MCP: List Servers**; Copilot Chat in **Agent** mode.
+
+Docs: [VS Code MCP](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)
+
+---
+
+## Copilot CLI
+
+Does **not** read VS Code’s `mcp.json`.
+
+| OS | Global path |
+|----|-------------|
+| macOS / Windows | `~/.copilot/mcp-config.json` |
+
+```bash
+npm run configure-clients -- --copilot-cli
+# or:
+copilot mcp add jira-worklog -- node /absolute/path/to/jira_work_logs/dist/interfaces/mcp/server.js
+copilot mcp list
+copilot mcp get jira-worklog
+```
+
+**macOS** (`~/.copilot/mcp-config.json`)
 
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "jira-worklog": {
-      "type": "stdio",
+      "type": "local",
       "command": "node",
-      "args": ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
+      "args": ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"],
+      "tools": ["*"]
     }
   }
 }
 ```
 
-Use doubled backslashes (`\\`) in JSON, or forward slashes (`C:/Users/...`).
+**Windows**
 
-## UI / Command Palette
+```json
+{
+  "mcpServers": {
+    "jira-worklog": {
+      "type": "local",
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"],
+      "tools": ["*"]
+    }
+  }
+}
+```
 
-### macOS
-
-1. Open the Command Palette (`Cmd+Shift+P`).
-2. Run **MCP: Add Server** and choose Workspace or User, **or** open **MCP: Open Workspace Folder Configuration** and paste the JSON above.
-3. Use **MCP: List Servers** to see status.
-4. In the `mcp.json` editor, use the inline **Start** control if shown.
-5. In Copilot Chat, switch to **Agent** mode so MCP tools can be used.
-
-### Windows
-
-1. Open the Command Palette (`Ctrl+Shift+P`).
-2. Run **MCP: Add Server** and choose Workspace or User, **or** open **MCP: Open Workspace Folder Configuration** and paste the JSON above.
-3. Use **MCP: List Servers** to see status.
-4. In the `mcp.json` editor, use the inline **Start** control if shown.
-5. In Copilot Chat, switch to **Agent** mode so MCP tools can be used.
-
-There is no dedicated `mcp` CLI for Copilot; configuration is file + Command Palette.
-
-## Verify
-
-| Check | Expected |
-|-------|----------|
-| **MCP: List Servers** | `jira-worklog` running / available |
-| Copilot Agent can call tools | `create_worklog`, `create_issue` |
-
-Use `USE_FAKE_JIRA=true` for a safe smoke test.
-
-## Official docs
-
-- [Add and manage MCP servers in VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)
-- [MCP configuration reference](https://code.visualstudio.com/docs/copilot/reference/mcp-configuration)
-- [Extend Copilot Chat with MCP](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp)
+Docs: [Copilot CLI MCP](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers)

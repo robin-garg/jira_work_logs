@@ -1,50 +1,29 @@
-# Codex
+# Codex (CLI and ChatGPT desktop)
 
-Connect this repo’s MCP server to [OpenAI Codex](https://developers.openai.com/codex/mcp) (CLI, IDE extension, and ChatGPT desktop share the same config).
+[Codex CLI](https://developers.openai.com/codex/mcp), the Codex IDE extension, and **ChatGPT desktop** (Codex) share one **global** config: `~/.codex/config.toml`. Configure once.
 
 Codex uses **TOML**, not JSON.
 
 ## Prerequisites
 
-1. Complete [Quick start](../../README.md#quick-start-after-cloning) (`npm run setup`) so `dist/interfaces/mcp/server.js` exists.
-2. Configure [Jira credentials](../../README.md#configure-jira-credentials) in `.env`.
-3. Codex CLI installed (`codex` on your `PATH`).
+1. `npm run setup`
+2. Configure [Jira credentials](../../README.md#configure-jira-credentials) in `.env`
+3. `codex` on your `PATH` (recommended for auto-configure)
 
-## Config file
+## Configure (global)
 
-| Scope | Path |
-|-------|------|
-| Global (macOS) | `~/.codex/config.toml` |
-| Global (Windows) | `%USERPROFILE%\.codex\config.toml` |
-| Project | `.codex/config.toml` (trusted projects only; same relative path on both OSes) |
-
-Section name must be `mcp_servers` (underscore).
-
-### macOS
-
-```toml
-[mcp_servers.jira-worklog]
-command = "node"
-args = ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
-cwd = "/Users/YOUR_USER/path/to/jira_work_logs"
-enabled = true
+```bash
+npm run configure-clients -- --codex
 ```
 
-### Windows
+| OS | Global path |
+|----|-------------|
+| macOS | `~/.codex/config.toml` |
+| Windows | `%USERPROFILE%\.codex\config.toml` |
 
-```toml
-[mcp_servers.jira-worklog]
-command = "node"
-args = ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
-cwd = "C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs"
-enabled = true
-```
+### Manual / CLI
 
-Setting `cwd` to the repo root helps `dotenv` load `.env`.
-
-## Terminal (preferred)
-
-### macOS / Linux (bash/zsh)
+**macOS**
 
 ```bash
 codex mcp add jira-worklog -- node /Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js
@@ -52,42 +31,37 @@ codex mcp list
 codex mcp get jira-worklog
 ```
 
-To remove:
-
-```bash
-codex mcp remove jira-worklog
+```toml
+[mcp_servers.jira-worklog]
+command = "node"
+args = ["/Users/YOUR_USER/path/to/jira_work_logs/dist/interfaces/mcp/server.js"]
+enabled = true
 ```
 
-### Windows (PowerShell)
+**Windows (PowerShell)**
 
 ```powershell
 codex mcp add jira-worklog -- node C:\Users\YOUR_USER\path\to\jira_work_logs\dist\interfaces\mcp\server.js
 codex mcp list
-codex mcp get jira-worklog
 ```
 
-To remove:
-
-```powershell
-codex mcp remove jira-worklog
+```toml
+[mcp_servers.jira-worklog]
+command = "node"
+args = ["C:\\Users\\YOUR_USER\\path\\to\\jira_work_logs\\dist\\interfaces\\mcp\\server.js"]
+enabled = true
 ```
-
-You can still edit the global `config.toml` by hand for `cwd`, timeouts, or tool filters.
-
-## UI
-
-ChatGPT desktop and the Codex IDE extension read the same `config.toml`. After adding the server via CLI or file, restart or reload the Codex client if tools do not appear.
 
 ## Verify
 
 | Check | Expected |
 |-------|----------|
 | `codex mcp list` | `jira-worklog` listed |
-| `codex mcp get jira-worklog` | `command` / `args` point at this repo’s `dist/.../server.js` |
-| Agent tool use | `create_worklog`, `create_issue` |
+| ChatGPT desktop / Codex UI | Tools available after reload |
+| Tool use | `create_worklog`, `create_issue` |
 
-Use `USE_FAKE_JIRA=true` for a safe smoke test.
+ChatGPT **on the web** does not use this local file.
 
 ## Official docs
 
-- [Model Context Protocol (Codex)](https://developers.openai.com/codex/mcp)
+- [Codex MCP](https://developers.openai.com/codex/mcp)
