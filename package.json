@@ -1,6 +1,6 @@
 {
   "name": "jira_work_logs",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Node.js backend service with TypeScript",
   "main": "dist/interfaces/api/server.js",
   "scripts": {
