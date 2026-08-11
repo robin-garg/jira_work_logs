@@ -32,7 +32,7 @@ const issueService = new IssueService(jiraServiceFactory);
 
 const server = new McpServer({
   name: 'jira-worklog-mcp',
-  version: '1.0.0',
+  version: '0.1.0',
 });
 
 server.registerTool(
